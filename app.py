@@ -1,7 +1,6 @@
 import json
 from datetime import date, datetime
 import pandas as pd
-import plotly.express as px
 import streamlit as st
 
 st.set_page_config(
@@ -654,7 +653,6 @@ def compute_kpi_dataframe(members_list, tasks_list, w_progress, w_quality, w_sla
     df_m = pd.DataFrame(members_list)
     df_t = pd.DataFrame(tasks_list)
 
-    # Tính tiến độ trung bình từ bảng công việc thực tế cho từng thành viên
     if not df_t.empty:
         task_agg = (
             df_t.groupby("member_id")
@@ -680,7 +678,6 @@ def compute_kpi_dataframe(members_list, tasks_list, w_progress, w_quality, w_sla
         (df_m["tasks_completed"] / df_m["tasks_assigned"].replace(0, 1)) * 100
     ).clip(0, 100)
 
-    # Điểm tiến độ kết hợp giữa tỷ lệ hoàn thành định mức và tiến độ đầu việc hiện tại
     df_m["progress_score"] = (
         0.6 * df_m["completion_rate"] + 0.4 * df_m["avg_task_progress"]
     ).round(1)
@@ -956,7 +953,6 @@ with tab1:
                     "competencies": new_competencies,
                 }
             )
-            # Đồng bộ tên trong bảng công việc
             for t in st.session_state.tasks:
                 if t["member_id"] == current_m["id"]:
                     t["member_name"] = new_name
@@ -1197,48 +1193,25 @@ with tab3:
         mime="text/csv",
     )
 
-    # Biểu đồ trực quan
+    # Biểu đồ trực quan tích hợp sẵn của Streamlit (không cần cài thêm thư viện ngoài)
     ch_col1, ch_col2 = st.columns(2)
     with ch_col1:
-        fig_bar = px.bar(
-            display_kpi_df.sort_values("kpi_total", ascending=True),
-            x="kpi_total",
-            y="name",
-            color="kpi_rank",
-            orientation="h",
-            title="Điểm KPI Tổng hợp của 20 Thành viên",
-            labels={"kpi_total": "Điểm KPI", "name": "Thành viên", "kpi_rank": "Xếp loại"},
-            text="kpi_total",
-            color_discrete_map={
-                "Xuất sắc (A+)": "#0f766e",
-                "Tốt (A)": "#0284c7",
-                "Đạt chuẩn (B)": "#f59e0b",
-                "Cần cải thiện (C)": "#dc2626",
-            },
-        )
-        fig_bar.update_layout(height=580, xaxis_range=[70, 102])
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.markdown("##### 📈 Biểu đồ Điểm KPI Tổng hợp theo Thành viên")
+        chart_kpi_df = display_kpi_df.set_index("name")[["kpi_total", "progress_score", "acceptance_rate"]]
+        chart_kpi_df.columns = ["Tổng điểm KPI", "Điểm Tiến độ", "Tỷ lệ BS Chấp thuận"]
+        st.bar_chart(chart_kpi_df, height=480)
 
     with ch_col2:
+        st.markdown("##### 📊 Khối lượng Công việc Giao & Hoàn thành theo 5 Phân hệ")
         sub_summary = (
-            df_filtered.groupby("subsystem", as_index=False)
+            df_filtered.groupby("subsystem", as_index=True)
             .agg(
-                kpi_mean=("kpi_total", "mean"),
-                completed_sum=("tasks_completed", "sum"),
-                assigned_sum=("tasks_assigned", "sum"),
+                Đã_hoàn_thành=("tasks_completed", "sum"),
+                Định_mức_giao=("tasks_assigned", "sum"),
             )
             .round(1)
         )
-        fig_sub = px.bar(
-            sub_summary,
-            x="subsystem",
-            y=["completed_sum", "assigned_sum"],
-            barmode="group",
-            title="Khối lượng Công việc Giao & Hoàn thành theo 5 Phân hệ",
-            labels={"value": "Số lượng ca/nhiệm vụ", "subsystem": "Phân hệ", "variable": "Chỉ số"},
-        )
-        fig_sub.update_layout(height=580, xaxis_tickangle=-15)
-        st.plotly_chart(fig_sub, use_container_width=True)
+        st.bar_chart(sub_summary, height=480)
 
 # ------------------------------------------
 # TAB 4: QUY TRÌNH PHỐI HỢP 5 BƯỚC & KIẾN TRÚC
