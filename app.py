@@ -976,7 +976,7 @@ filtered_ids = set(df_master_filtered["id"].tolist())
 # ==============================================================================
 # TIÊU ĐỀ CHÍNH & BẢNG CHỈ SỐ TỔNG QUAN 6 TRỤ CỘT
 # ==============================================================================
-st.title("🏥 Hệ Thống Quản Trị & Chấm Điểm KPI Đa Module — Tổ Dược Lâm Sàng 20 Người")
+st.title("🏥 HỆ THỐNG QUẢN TRỊ, CHẤM ĐIỂM KPI - TỔ DƯỢC LÂM SÀNG")
 st.markdown(
     "**Kiến trúc tách biệt độc lập từng Module tiêu chí mục tiêu (Thứ 2 – Thứ 6), Module Tự động Phân công theo Khoa - Tính cách - Năng lực & Module Tổng hợp KPI**"
 )
