@@ -6,14 +6,15 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Hệ thống Quản trị & Chấm điểm KPI Đa Module - Tổ Dược Lâm Sàng",
+    page_title="Hệ thống Quản trị & Chấm điểm KPI - Tổ Dược Lâm Sàng (15 Thành viên)",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-STATE_VERSION = "v4.0_excel_live_sync"
-AUTOSAVE_FILE = "kpi_dls_autosave.json"
+STATE_VERSION = "v5.0_real_15_members_dls"
+AUTOSAVE_FILE = "kpi_dls_15tv_autosave.json"
+DEFAULT_EXCEL_FILENAME = "DS tổ dls.xlsx"
 WEEKDAYS = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"]
 
 # ==============================================================================
@@ -292,252 +293,269 @@ PERSONALITY_MODIFIERS = {
 }
 
 
+def normalize_option(val, options, default_val):
+    """Chuẩn hóa chuỗi từ Excel (hoa/thường, dấu '&' và '-') khớp chính xác với danh mục chuẩn."""
+    if pd.isna(val) or not str(val).strip():
+        return default_val
+    s = str(val).strip()
+    if s in options:
+        return s
+    s_norm = s.lower().replace("&", "-").replace("  ", " ")
+    for opt in options:
+        opt_norm = opt.lower().replace("&", "-").replace("  ", " ")
+        if s_norm == opt_norm or s_norm in opt_norm or opt_norm in s_norm:
+            return opt
+    return default_val
+
+
 # ==============================================================================
-# MODULE 1: DỮ LIỆU GỐC 20 THÀNH VIÊN
+# MODULE 1: DỮ LIỆU GỐC 15 THÀNH VIÊN THỰC TẾ THEO FILE "DS tổ dls.xlsx"
 # ==============================================================================
 def get_default_members():
     return [
         {
             "id": "#01",
-            "name": "DSCKII. Nguyễn Minh Quân",
-            "code_role": "Chief Orchestrator (Tổng Điều phối DLS)",
-            "subsystem": SUBSYSTEMS[0],
-            "department": "Ban Giám đốc & Phòng KHTH (Điều phối chung)",
-            "personality_tag": PERSONALITY_TAGS[0],
-            "personality": "Quyết đoán, tư duy hệ thống, điềm tĩnh, giao tiếp đa chuyên khoa sắc bén",
-            "competencies": "Điều phối luồng EMR/HIS, phân rã tác vụ hội chẩn toàn viện, tổng hợp phiếu tư vấn DLS",
-            "skill_score": 96,
-            "sla_compliance": 98.0,
+            "name": "Ngô Chí Hiếu",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Khám bệnh & Điều trị Ngoại trú",
+            "personality_tag": PERSONALITY_TAGS[3],
+            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
+            "competencies": "Rà soát đơn ngoại trú; trao đổi với bác sĩ để lựa chọn thuốc, hiệu chỉnh liều và xử lý tương tác; tư vấn người bệnh.",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#02",
-            "name": "ThS.DS. Trần Thu Hà",
-            "code_role": "Clinical Compliance & Ethics (Kiểm duyệt Pháp lý Dược)",
-            "subsystem": SUBSYSTEMS[0],
-            "department": "Ban Giám đốc & Phòng KHTH (Điều phối chung)",
-            "personality_tag": PERSONALITY_TAGS[1],
-            "personality": "Nguyên tắc, cẩn trọng, tỉ mỉ, thượng tôn pháp luật và đạo đức y khoa",
-            "competencies": "Kiểm soát quy chuẩn Nghị định 131/2020/NĐ-CP, thẩm định pháp lý khuyến nghị, bảo mật EMR",
-            "skill_score": 94,
-            "sla_compliance": 97.5,
+            "name": "Nguyễn Thị Nhung",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Hồi sức tích cực - Chống độc (ICU)",
+            "personality_tag": PERSONALITY_TAGS[3],
+            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Hồi sức tích cực - chống độc, khoa sản, khoa nhi 01",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#03",
-            "name": "DSCKI. Lê Hoàng Nam",
-            "code_role": "Medication History & Reconciliation (Đối soát Tiền sử Thuốc)",
-            "subsystem": SUBSYSTEMS[1],
-            "department": "Khoa Khám bệnh & Điều trị Ngoại trú",
-            "personality_tag": PERSONALITY_TAGS[4],
-            "personality": "Kiên nhẫn, quan sát tinh tế, giao tiếp thân thiện khi khai thác tiền sử người bệnh",
-            "competencies": "Đối soát thuốc (MedRec) khi nhập/chuyển viện, phát hiện trùng lặp hoạt chất, OCR đơn thuốc",
+            "name": "Nguyễn Tuấn Hùng",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Ngoại Tổng hợp & Chấn thương",
+            "personality_tag": PERSONALITY_TAGS[3],
+            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Ngoại tổng hợp - Chấn thương 01",
             "skill_score": 90,
-            "sla_compliance": 95.0,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#04",
-            "name": "ThS.DS. Phạm Ngọc Ánh",
-            "code_role": "Drug-Drug & Drug-Food Interaction (Rà soát Tương tác Thuốc)",
-            "subsystem": SUBSYSTEMS[1],
-            "department": "Khoa Nội Hô hấp - Tiêu hóa",
-            "personality_tag": PERSONALITY_TAGS[3],
-            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
-            "competencies": "Phân tích tương tác thuốc-thuốc & thuốc-thức ăn, phân tầng mức độ chống chỉ định, cảnh báo dị ứng",
-            "skill_score": 93,
-            "sla_compliance": 96.5,
+            "name": "Nguyễn Hữu Hồng Đức",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Khám bệnh & Điều trị Ngoại trú",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Rà soát đơn ngoại trú; trao đổi với bác sĩ để lựa chọn thuốc, hiệu chỉnh liều và xử lý tương tác; tư vấn người bệnh.",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#05",
-            "name": "DSCKI. Vũ Đức Thắng",
-            "code_role": "Renal & Hepatic Dose Adjustment (Chỉnh liều Suy thận/Gan)",
-            "subsystem": SUBSYSTEMS[1],
-            "department": "Khoa Thận - Tiết niệu & Lọc máu",
-            "personality_tag": PERSONALITY_TAGS[2],
-            "personality": "Chính xác tuyệt đối với con số, cẩn thận, suy luận dược động học chặt chẽ",
-            "competencies": "Tính eGFR, CrCl (Cockcroft-Gault), phân loại Child-Pugh, hiệu chỉnh liều cho bệnh nhân lọc máu/CRRT",
-            "skill_score": 95,
-            "sla_compliance": 96.5,
+            "name": "Nguyễn Khắc Huy",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Bệnh nhiệt đới & Truyền nhiễm",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Bệnh nhiệt đới, Nội tim mạch",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#06",
-            "name": "ThS.DS. Hoàng Minh Phương",
-            "code_role": "Special Populations Safety (An toàn Thuốc Đối tượng Đặc biệt)",
-            "subsystem": SUBSYSTEMS[1],
-            "department": "Khoa Sản - Phụ khoa",
-            "personality_tag": PERSONALITY_TAGS[4],
-            "personality": "Chu đáo, ân cần, thấu cảm cao với bệnh nhân nhi, thai phụ và người cao tuổi",
-            "competencies": "Thang an toàn thai kỳ FDA/TGA, tính liều nhi khoa theo cân nặng/BSA, bộ tiêu chuẩn Beers/STOPP-START",
-            "skill_score": 91,
-            "sla_compliance": 95.0,
+            "name": "Nguyễn Văn Huy",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Nội tiết - Đái tháo đường",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Nội tổng hợp 01",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#07",
-            "name": "TS.DS. Đặng Quốc Khánh",
-            "code_role": "Anti-infective & Stewardship (Dược lâm sàng Kháng sinh & ASP)",
-            "subsystem": SUBSYSTEMS[2],
-            "department": "Khoa Bệnh nhiệt đới & Truyền nhiễm",
-            "personality_tag": PERSONALITY_TAGS[0],
-            "personality": "Bản lĩnh, quyết liệt bảo vệ phác đồ chuẩn, lập luận vi sinh - dược lý thuyết phục",
-            "competencies": "Quản lý sử dụng kháng sinh (ASP), đọc kháng sinh đồ, tư vấn xuống thang và chuyển kháng sinh IV sang PO",
-            "skill_score": 97,
+            "name": "Trịnh Thị Ngọc Lê",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Nội Hô hấp - Tiêu hóa",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa TMH, RHM, Mắt, YHCT 01",
+            "skill_score": 90,
             "sla_compliance": 96.0,
         },
         {
             "id": "#08",
-            "name": "ThS.DS. Bùi Thanh Tùng",
-            "code_role": "Therapeutic Drug Monitoring - TDM (Giám sát Nồng độ Thuốc)",
-            "subsystem": SUBSYSTEMS[2],
-            "department": "Khoa Hồi sức tích cực - Chống độc (ICU)",
-            "personality_tag": PERSONALITY_TAGS[2],
-            "personality": "Đam mê toán dược động học, tỉ mỉ, tập trung cao độ",
-            "competencies": "Mô hình dược động học Bayes, hiệu chỉnh liều Vancomycin (AUC/MIC), Aminoglycosid, Phenytoin, Tacrolimus",
-            "skill_score": 95,
-            "sla_compliance": 96.5,
+            "name": "Lê Thị Thúy Hằng",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[1],
+            "department": "Khoa Khám bệnh & Điều trị Ngoại trú",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "An toàn đơn thuốc & Dược lý cơ bản",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#09",
-            "name": "DSCKI. Ngô Thị Lan Hương",
-            "code_role": "Cardiology & Endocrinology (DLS Tim mạch & Nội tiết)",
-            "subsystem": SUBSYSTEMS[2],
-            "department": "Khoa Nội Tim mạch - Lão học",
-            "personality_tag": PERSONALITY_TAGS[4],
-            "personality": "Điềm đạm, sâu sắc, kiên trì đồng hành cùng bệnh nhân bệnh mạn tính",
-            "competencies": "Tối ưu phác đồ suy tim, tăng huyết áp, đái tháo đường, kiểm soát HbA1c, lipid máu và thuốc chống đông",
-            "skill_score": 92,
-            "sla_compliance": 95.5,
+            "name": "Lê Trần Đạt",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Hồi sức tích cực - Chống độc (ICU)",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Hồi sức tích cực - chống độc 02",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#10",
-            "name": "DSCKII. Trịnh Quang Huy",
-            "code_role": "ICU & Emergency Critical Care (DLS Hồi sức Cấp cứu)",
-            "subsystem": SUBSYSTEMS[2],
-            "department": "Khoa Hồi sức tích cực - Chống độc (ICU)",
+            "name": "Ngũ Thị Hồng Nhung",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Nội Tim mạch - Lão học",
             "personality_tag": PERSONALITY_TAGS[3],
-            "personality": "Bình tĩnh dưới áp lực cao, phản xạ lâm sàng tức thì, phối hợp ăn ý với bác sĩ trực",
-            "competencies": "Thuốc vận mạch, an thần - giảm đau ICU, tra cứu tương kỵ truyền tĩnh mạch chữ Y (Y-site), đánh giá SOFA",
-            "skill_score": 96,
-            "sla_compliance": 98.5,
+            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
+            "competencies": "Rà soát đơn ngoại trú; trao đổi với bác sĩ để lựa chọn thuốc, hiệu chỉnh liều và xử lý tương tác; tư vấn người bệnh. Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Nội tổng hợp 02",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#11",
-            "name": "ThS.DS. Lý Mỹ Linh",
-            "code_role": "Oncology & Supportive Care (DLS Ung bướu & Huyết học)",
-            "subsystem": SUBSYSTEMS[2],
-            "department": "Khoa Ung bướu & Huyết học lâm sàng",
-            "personality_tag": PERSONALITY_TAGS[2],
-            "personality": "Kỹ lưỡng, giàu lòng trắc ẩn, kiểm tra chéo đa tầng không để xảy ra sai sót",
-            "competencies": "Kiểm duyệt liều hóa trị/nhắm trúng đích theo BSA, dự phòng nôn, xử trí sốt giảm bạch cầu hạt (ANC)",
-            "skill_score": 93,
+            "name": "Trịnh Thị Quỳnh Nga",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Ngoại Tổng hợp & Chấn thương",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa Ngoại tổng hợp 02, TMH, Mắt, RHM",
+            "skill_score": 90,
             "sla_compliance": 96.0,
         },
         {
             "id": "#12",
-            "name": "DSCKI. Đỗ Văn Khôi",
-            "code_role": "Pain Management & Palliative Care (Quản lý Đau & Giảm nhẹ)",
-            "subsystem": SUBSYSTEMS[2],
-            "department": "Đơn vị Quản lý Đau & Chăm sóc giảm nhẹ",
-            "personality_tag": PERSONALITY_TAGS[4],
-            "personality": "Nhẹ nhàng, lắng nghe, thấu hiểu tâm lý người bệnh đau mạn tính",
-            "competencies": "Thang điểm đau VAS/NPRS, tính chuyển đổi liều tương đương Opioid (MME), dự phòng ức chế hô hấp & táo bón",
-            "skill_score": 89,
-            "sla_compliance": 94.0,
+            "name": "Phạm Thị Thùy Ngân",
+            "code_role": "Thành viên",
+            "subsystem": SUBSYSTEMS[3],
+            "department": "Khoa Nội Hô hấp - Tiêu hóa",
+            "personality_tag": PERSONALITY_TAGS[5],
+            "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại cs 03",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#13",
-            "name": "ThS.DS. Mai Thanh Thảo",
-            "code_role": "Medical Literature & RAG Query (Tra cứu Dược thư & Phác đồ)",
+            "name": "Trần Văn Đông",
+            "code_role": "Thành viên",
             "subsystem": SUBSYSTEMS[3],
-            "department": "Trung tâm Thông tin thuốc & Cảnh giác Dược (DI & ADR)",
+            "department": "Khoa Thần kinh - Cơ xương khớp",
             "personality_tag": PERSONALITY_TAGS[5],
             "personality": "Ham học hỏi, tư duy học thuật chuẩn mực, trích dẫn bằng chứng y khoa chính xác",
-            "competencies": "Truy xuất Dược thư Quốc gia, Micromedex, AHFS, Hướng dẫn Bộ Y tế, tổng hợp điểm tin thông tin thuốc",
-            "skill_score": 94,
-            "sla_compliance": 97.5,
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại khoa YHCT",
+            "skill_score": 90,
+            "sla_compliance": 96.0,
         },
         {
             "id": "#14",
-            "name": "DSCKI. Phan Anh Tuấn",
-            "code_role": "Pharmacovigilance & ADR Reporting (Cảnh giác Dược & ADR)",
+            "name": "Đậu Đình Hùng Cường",
+            "code_role": "Thành viên",
             "subsystem": SUBSYSTEMS[3],
-            "department": "Trung tâm Thông tin thuốc & Cảnh giác Dược (DI & ADR)",
-            "personality_tag": PERSONALITY_TAGS[5],
-            "personality": "Bền bỉ, tinh thần cảnh giác cao, phân tích nguyên nhân - hệ quả khách quan",
-            "competencies": "Đánh giá thang Naranjo và WHO-UMC, lập báo cáo ADR gửi Trung tâm DI & ADR Quốc gia, truy vết chuỗi phản ứng",
-            "skill_score": 92,
+            "department": "Khoa Khám bệnh & Điều trị Ngoại trú",
+            "personality_tag": PERSONALITY_TAGS[3],
+            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
+            "competencies": "Rà soát đơn ngoại trú; trao đổi với bác sĩ để lựa chọn thuốc, hiệu chỉnh liều và xử lý tương tác; tư vấn người bệnh.",
+            "skill_score": 90,
             "sla_compliance": 96.0,
         },
         {
             "id": "#15",
-            "name": "DSĐH. Nguyễn Bảo Ngọc",
-            "code_role": "Patient Medication Education (Tư vấn & Hướng dẫn Bệnh nhân)",
+            "name": "Lê Thị Thảo",
+            "code_role": "Thành viên",
             "subsystem": SUBSYSTEMS[3],
             "department": "Khoa Khám bệnh & Điều trị Ngoại trú",
-            "personality_tag": PERSONALITY_TAGS[4],
-            "personality": "Hoạt ngôn, truyền cảm, biến kiến thức y khoa phức tạp thành lời khuyên dễ hiểu",
-            "competencies": "Tư vấn kỹ thuật dùng bình hít/xịt COPD-Hen, bút tiêm Insulin, thời điểm dùng thuốc và chế độ dinh dưỡng",
+            "personality_tag": PERSONALITY_TAGS[3],
+            "personality": "Nhạy bén, tư duy phân tích logic, phản ứng nhanh với các cảnh báo đỏ",
+            "competencies": "Hội chẩn sử dụng thuốc; rà soát bệnh án, hiệu chỉnh liều và can thiệp dược lâm sàng tại cs03",
             "skill_score": 90,
-            "sla_compliance": 95.5,
-        },
-        {
-            "id": "#16",
-            "name": "DSĐH. Trương Gia Bảo",
-            "code_role": "Digital Adherence & Refill Monitor (Theo dõi Tuân thủ Điều trị)",
-            "subsystem": SUBSYSTEMS[3],
-            "department": "Khoa Nội tiết - Đái tháo đường",
-            "personality_tag": PERSONALITY_TAGS[4],
-            "personality": "Nhiệt tình, kỷ luật, tận tâm đồng hành cùng bệnh nhân ngoại trú",
-            "competencies": "Đánh giá tuân thủ điều trị theo thang MMAS-8, quản lý lịch nhắc uống thuốc Telehealth, cảnh báo bỏ liều",
-            "skill_score": 88,
-            "sla_compliance": 94.0,
-        },
-        {
-            "id": "#17",
-            "name": "DSCKI. Hà Kiều Trang",
-            "code_role": "Health Insurance & Formulary Compliance (Kiểm soát BHYT)",
-            "subsystem": SUBSYSTEMS[4],
-            "department": "Phòng Bảo hiểm Y tế & Kinh tế Dược",
-            "personality_tag": PERSONALITY_TAGS[1],
-            "personality": "Sắc sảo, nắm vững thông tư, bảo vệ an toàn quỹ BHYT và quyền lợi người bệnh",
-            "competencies": "Rà soát điều kiện thanh toán BHYT theo Thông tư 20/2022/TT-BYT, phòng ngừa xuất toán thuốc ngoài danh mục",
-            "skill_score": 95,
-            "sla_compliance": 98.0,
-        },
-        {
-            "id": "#18",
-            "name": "ThS.DS. Lương Thế Vinh",
-            "code_role": "Pharmacoeconomics & Cost-Optimization (Kinh tế Dược)",
-            "subsystem": SUBSYSTEMS[4],
-            "department": "Phòng Bảo hiểm Y tế & Kinh tế Dược",
-            "personality_tag": PERSONALITY_TAGS[2],
-            "personality": "Thực tế, tư duy tối ưu hóa nguồn lực, cân bằng hiệu quả điều trị và chi phí",
-            "competencies": "Phân tích chi phí - hiệu quả (CEA), tư vấn chuyển đổi thuốc Generic/Biosimilar, phân tích ABC/VEN",
-            "skill_score": 91,
-            "sla_compliance": 94.5,
-        },
-        {
-            "id": "#19",
-            "name": "TS.DS. Chu Hoàng Yến",
-            "code_role": "Clinical Audit & DUE/DUR (Đánh giá Sử dụng Thuốc & NCKH)",
-            "subsystem": SUBSYSTEMS[4],
-            "department": "Trung tâm Đào tạo & Nghiên cứu Khoa học",
-            "personality_tag": PERSONALITY_TAGS[5],
-            "personality": "Tư duy dữ liệu lớn, sắc bén trong nghiên cứu khoa học và cải tiến chất lượng",
-            "competencies": "Thiết kế đề cương DUE/DUR, thống kê y sinh, kiểm toán đơn thuốc toàn viện, viết báo cáo NCKH",
-            "skill_score": 94,
-            "sla_compliance": 96.5,
-        },
-        {
-            "id": "#20",
-            "name": "ThS.DS. Nguyễn Xuân Bách",
-            "code_role": "Pharmacist Continuing Education - CME (Đào tạo Liên tục)",
-            "subsystem": SUBSYSTEMS[4],
-            "department": "Trung tâm Đào tạo & Nghiên cứu Khoa học",
-            "personality_tag": PERSONALITY_TAGS[5],
-            "personality": "Truyền cảm hứng, sáng tạo, luôn cập nhật xu hướng y học thực chứng mới nhất",
-            "competencies": "Xây dựng ngân hàng ca lâm sàng (Case Study), tổ chức sinh hoạt khoa học CME, cập nhật PubMed/Guideline",
-            "skill_score": 91,
-            "sla_compliance": 95.0,
+            "sla_compliance": 96.0,
         },
     ]
+
+
+def parse_member_sheet_from_excel_df(df_raw):
+    """
+    Hỗ trợ đọc trực tiếp Sheet 'DS tổ dls.xlsx' (kể cả khi dòng 1 là tiêu đề bảng
+    và dòng 2 mới là tên cột 'Mã TV', 'Họ và tên Dược sĩ', ...).
+    """
+    df = df_raw.copy()
+    if "Họ và tên Dược sĩ" not in df.columns:
+        # Tìm dòng chứa tiêu đề cột 'Họ và tên Dược sĩ'
+        for idx, row in df.iterrows():
+            row_vals = [str(v).strip() for v in row.values if pd.notna(v)]
+            if any("Họ và tên" in v for v in row_vals):
+                df.columns = [str(v).strip() if pd.notna(v) else f"col_{i}" for i, v in enumerate(row.values)]
+                df = df.iloc[idx + 1 :].reset_index(drop=True)
+                break
+
+    if "Họ và tên Dược sĩ" not in df.columns:
+        return None
+
+    parsed_members = []
+    for i, r in df.iterrows():
+        name_val = r.get("Họ và tên Dược sĩ")
+        if pd.isna(name_val) or not str(name_val).strip():
+            continue
+        raw_id = r.get("Mã TV", i + 1)
+        try:
+            id_str = f"#{int(float(raw_id)):02d}"
+        except Exception:
+            id_str = str(raw_id).strip()
+            if not id_str.startswith("#"):
+                id_str = f"#{id_str}"
+
+        raw_score = r.get("Điểm năng lực", 90)
+        try:
+            skill_score = int(float(raw_score)) if pd.notna(raw_score) else 90
+        except Exception:
+            skill_score = 90
+
+        parsed_members.append(
+            {
+                "id": id_str,
+                "name": str(name_val).strip(),
+                "code_role": str(r.get("Chức danh chuyên môn", "Thành viên")).strip()
+                if pd.notna(r.get("Chức danh chuyên môn"))
+                else "Thành viên",
+                "subsystem": normalize_option(r.get("Phân hệ"), SUBSYSTEMS, SUBSYSTEMS[3]),
+                "department": normalize_option(
+                    r.get("Khoa lâm sàng phụ trách"), CLINICAL_DEPARTMENTS, CLINICAL_DEPARTMENTS[1]
+                ),
+                "personality_tag": normalize_option(r.get("Nhóm tính cách"), PERSONALITY_TAGS, PERSONALITY_TAGS[3]),
+                "personality": str(r.get("Mô tả tính cách chi tiết", "")).strip()
+                if pd.notna(r.get("Mô tả tính cách chi tiết"))
+                else "",
+                "competencies": str(r.get("Năng lực chuyên môn và công cụ", "")).strip()
+                if pd.notna(r.get("Năng lực chuyên môn và công cụ"))
+                else "",
+                "skill_score": max(50, min(100, skill_score)),
+                "sla_compliance": 96.0,
+            }
+        )
+    return parsed_members if len(parsed_members) > 0 else None
 
 
 # ==============================================================================
@@ -546,7 +564,7 @@ def get_default_members():
 def auto_assign_weekly_plan_for_member(member, workload_scale=1.0):
     dept = member.get("department", CLINICAL_DEPARTMENTS[0])
     p_tag = member.get("personality_tag", PERSONALITY_TAGS[0])
-    skill = float(member.get("skill_score", 90))
+    skill = float(member.get("skill_score", 90) if pd.notna(member.get("skill_score")) else 90)
 
     base_prof = DEPARTMENT_WORKLOAD_PROFILE.get(
         dept, DEPARTMENT_WORKLOAD_PROFILE[CLINICAL_DEPARTMENTS[0]]
@@ -566,10 +584,11 @@ def auto_assign_weekly_plan_for_member(member, workload_scale=1.0):
     )
     counsel_target_pct = round(min(100.0, max(50.0, base_prof["counsel_target_pct"] * p_mod["counsel"])), 1)
 
-    assigned_task_desc = (
-        f"[{dept}] {base_prof['focus_task']} | "
-        f"Phát huy thế mạnh ({p_tag}): {p_mod['style_note']}."
-    )
+    comp_text = str(member.get("competencies", "")).strip()
+    if comp_text:
+        assigned_task_desc = f"{comp_text} | [{dept}]"
+    else:
+        assigned_task_desc = f"[{dept}] {base_prof['focus_task']}"
 
     return {
         "member_id": member["id"],
@@ -793,7 +812,6 @@ def score_module_4_prescription(m4_list, max_cap=100.0):
         c_in = min(float(max_cap), max(0.0, in_pct))
         c_tot = min(float(max_cap), max(0.0, tot_pct))
 
-        # Chuẩn thực tế Excel: Không phạt Dược sĩ Nội trú có mục tiêu Ngoại trú = 0 (và ngược lại)
         if t_out > 0 and t_in > 0:
             score = 0.5 * c_tot + 0.25 * c_out + 0.25 * c_in
         elif t_out > 0 and t_in == 0:
@@ -827,7 +845,6 @@ def score_module_5_consultation(m5_list, max_cap=100.0):
         if t <= 0:
             return pd.Series([100.0, 100.0])
         if d <= 0:
-            # Nếu không thực hiện ca hội chẩn nào thì điểm = 0 (không cộng điểm đồng thuận khống)
             return pd.Series([0.0, 0.0])
         qty_pct = (d / t) * 100.0
         score = 0.65 * min(float(max_cap), qty_pct) + 0.35 * cons
@@ -906,7 +923,18 @@ def compute_master_kpi_module8(members_list, m2_list, df_m3, df_m4, df_m5, df_m6
         .merge(df_m3[["member_id", "done_week", "target_week", "score_m3"]], left_on="id", right_on="member_id", how="left")
         .drop(columns=["member_id"])
         .merge(
-            df_m4[["member_id", "done_out_week", "target_out_week", "done_in_week", "target_in_week", "done_total_rx", "target_total_rx", "score_m4"]],
+            df_m4[
+                [
+                    "member_id",
+                    "done_out_week",
+                    "target_out_week",
+                    "done_in_week",
+                    "target_in_week",
+                    "done_total_rx",
+                    "target_total_rx",
+                    "score_m4",
+                ]
+            ],
             left_on="id",
             right_on="member_id",
             how="left",
@@ -916,7 +944,12 @@ def compute_master_kpi_module8(members_list, m2_list, df_m3, df_m4, df_m5, df_m6
         .drop(columns=["member_id"])
         .merge(df_m6[["member_id", "done_dose_week", "target_dose_week", "score_m6"]], left_on="id", right_on="member_id", how="left")
         .drop(columns=["member_id"])
-        .merge(df_m7[["member_id", "counseled_week", "total_rx_week", "actual_counsel_pct", "target_counsel_pct", "score_m7"]], left_on="id", right_on="member_id", how="left")
+        .merge(
+            df_m7[["member_id", "counseled_week", "total_rx_week", "actual_counsel_pct", "target_counsel_pct", "score_m7"]],
+            left_on="id",
+            right_on="member_id",
+            how="left",
+        )
         .drop(columns=["member_id"])
     )
 
@@ -951,7 +984,7 @@ def compute_master_kpi_module8(members_list, m2_list, df_m3, df_m4, df_m5, df_m6
 
 
 # ==============================================================================
-# CƠ CHẾ AUTO-SAVE XUỐNG Ổ CỨNG & XUẤT/NHẬP EXCEL (.XLSX) ĐA SHEET
+# CƠ CHẾ AUTO-SAVE XUỐNG Ổ CỨNG & ĐỌC TRỰC TIẾP FILE EXCEL "DS tổ dls.xlsx"
 # ==============================================================================
 def get_current_payload():
     return {
@@ -980,7 +1013,6 @@ def get_current_payload():
 
 
 def save_state_to_disk():
-    """Tự động lưu toàn bộ dữ liệu xuống file JSON cục bộ mỗi khi sửa thông số trên Web."""
     try:
         payload = get_current_payload()
         with open(AUTOSAVE_FILE, "w", encoding="utf-8") as f:
@@ -995,11 +1027,24 @@ def load_state_from_disk():
         try:
             with open(AUTOSAVE_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            if "members" in data and "m3_hsba" in data:
+            if data.get("app_version") == STATE_VERSION and "members" in data and "m3_hsba" in data:
                 return data
         except Exception:
             return None
     return None
+
+
+def load_initial_members():
+    """Nếu trong thư mục có sẵn file 'DS tổ dls.xlsx', tự động đọc danh sách từ file Excel đó."""
+    if os.path.exists(DEFAULT_EXCEL_FILENAME):
+        try:
+            df_raw = pd.read_excel(DEFAULT_EXCEL_FILENAME, sheet_name=0)
+            parsed = parse_member_sheet_from_excel_df(df_raw)
+            if parsed is not None:
+                return parsed
+        except Exception:
+            pass
+    return get_default_members()
 
 
 def ensure_session_state_initialized(force_reset=False):
@@ -1034,7 +1079,7 @@ def ensure_session_state_initialized(force_reset=False):
         st.session_state.last_saved_time = saved_data.get("updated_at", "Đã khôi phục từ ổ cứng")
     else:
         st.session_state.app_version = STATE_VERSION
-        st.session_state.members = get_default_members()
+        st.session_state.members = load_initial_members()
         m2, m3, m4, m5, m6, m7 = generate_all_modules_from_auto_assignment(
             st.session_state.members, workload_scale=1.0
         )
@@ -1058,7 +1103,6 @@ def ensure_session_state_initialized(force_reset=False):
 
 
 def export_all_to_excel_bytes(df_master, df_m3, df_m4, df_m5, df_m6, df_m7):
-    """Xuất toàn bộ 8 Module & Trọng số ra 1 file Excel (.xlsx) đa Sheet chuẩn thực tế."""
     output = io.BytesIO()
     engine_used = None
     for eng in ["openpyxl", "xlsxwriter"]:
@@ -1085,50 +1129,71 @@ def export_all_to_excel_bytes(df_master, df_m3, df_m4, df_m5, df_m6, df_m7):
 
 
 def import_from_excel_file(uploaded_excel):
-    """Đọc dữ liệu từ file Excel (.xlsx) nhiều Sheet và nạp đồng bộ vào 8 Module."""
+    """
+    Hỗ trợ nạp CẢ 2 LOẠI FILE EXCEL:
+    1. File 9 Sheet xuất từ hệ thống ('M1_NhanSu', 'M2_PhanCong', ...)
+    2. File Danh sách nhân sự 1 Sheet ('DS tổ dls.xlsx' có cột 'Họ và tên Dược sĩ')
+    """
     sheets = pd.read_excel(uploaded_excel, sheet_name=None)
     if "M1_NhanSu" in sheets:
         st.session_state.members = sheets["M1_NhanSu"].to_dict(orient="records")
-    if "M2_PhanCong" in sheets:
-        st.session_state.m2_assignments = sheets["M2_PhanCong"].to_dict(orient="records")
-    if "M3_HSBA" in sheets:
-        cols_m3 = ["member_id", "member_name", "department", "target_week"] + WEEKDAYS
-        df3 = sheets["M3_HSBA"]
-        avail3 = [c for c in cols_m3 if c in df3.columns]
-        st.session_state.m3_hsba = df3[avail3].to_dict(orient="records")
-    if "M4_DuyetDon" in sheets:
-        cols_m4 = [
-            "member_id", "member_name", "department", "target_out_week", "target_in_week",
-            "out_t2", "out_t3", "out_t4", "out_t5", "out_t6",
-            "in_t2", "in_t3", "in_t4", "in_t5", "in_t6",
-        ]
-        df4 = sheets["M4_DuyetDon"]
-        avail4 = [c for c in cols_m4 if c in df4.columns]
-        st.session_state.m4_rx = df4[avail4].to_dict(orient="records")
-    if "M5_HoiChan" in sheets:
-        cols_m5 = ["member_id", "member_name", "department", "target_consult_week"] + WEEKDAYS + ["doctor_consensus_pct"]
-        df5 = sheets["M5_HoiChan"]
-        avail5 = [c for c in cols_m5 if c in df5.columns]
-        st.session_state.m5_consult = df5[avail5].to_dict(orient="records")
-    if "M6_ChinhLieu" in sheets:
-        cols_m6 = ["member_id", "member_name", "department", "target_dose_week"] + WEEKDAYS + ["intervention_success_pct"]
-        df6 = sheets["M6_ChinhLieu"]
-        avail6 = [c for c in cols_m6 if c in df6.columns]
-        st.session_state.m6_dose = df6[avail6].to_dict(orient="records")
-    if "M7_TuVan" in sheets:
-        cols_m7 = [
-            "member_id", "member_name", "department", "target_counsel_pct",
-            "coun_t2", "tot_t2", "coun_t3", "tot_t3", "coun_t4", "tot_t4",
-            "coun_t5", "tot_t5", "coun_t6", "tot_t6",
-        ]
-        df7 = sheets["M7_TuVan"]
-        avail7 = [c for c in cols_m7 if c in df7.columns]
-        st.session_state.m7_counsel = df7[avail7].to_dict(orient="records")
-    if "CauHinh_TrongSo" in sheets and not sheets["CauHinh_TrongSo"].empty:
-        w_row = sheets["CauHinh_TrongSo"].iloc[0].to_dict()
-        for k in st.session_state.weights:
-            if k in w_row and pd.notna(w_row[k]):
-                st.session_state.weights[k] = int(w_row[k])
+        for m in st.session_state.members:
+            m["subsystem"] = normalize_option(m.get("subsystem"), SUBSYSTEMS, SUBSYSTEMS[3])
+            m["department"] = normalize_option(m.get("department"), CLINICAL_DEPARTMENTS, CLINICAL_DEPARTMENTS[1])
+            m["personality_tag"] = normalize_option(m.get("personality_tag"), PERSONALITY_TAGS, PERSONALITY_TAGS[3])
+            m["skill_score"] = int(float(m["skill_score"])) if pd.notna(m.get("skill_score")) else 90
+
+        if "M2_PhanCong" in sheets:
+            st.session_state.m2_assignments = sheets["M2_PhanCong"].to_dict(orient="records")
+        if "M3_HSBA" in sheets:
+            cols_m3 = ["member_id", "member_name", "department", "target_week"] + WEEKDAYS
+            df3 = sheets["M3_HSBA"]
+            st.session_state.m3_hsba = df3[[c for c in cols_m3 if c in df3.columns]].to_dict(orient="records")
+        if "M4_DuyetDon" in sheets:
+            cols_m4 = [
+                "member_id", "member_name", "department", "target_out_week", "target_in_week",
+                "out_t2", "out_t3", "out_t4", "out_t5", "out_t6",
+                "in_t2", "in_t3", "in_t4", "in_t5", "in_t6",
+            ]
+            df4 = sheets["M4_DuyetDon"]
+            st.session_state.m4_rx = df4[[c for c in cols_m4 if c in df4.columns]].to_dict(orient="records")
+        if "M5_HoiChan" in sheets:
+            cols_m5 = ["member_id", "member_name", "department", "target_consult_week"] + WEEKDAYS + ["doctor_consensus_pct"]
+            df5 = sheets["M5_HoiChan"]
+            st.session_state.m5_consult = df5[[c for c in cols_m5 if c in df5.columns]].to_dict(orient="records")
+        if "M6_ChinhLieu" in sheets:
+            cols_m6 = ["member_id", "member_name", "department", "target_dose_week"] + WEEKDAYS + ["intervention_success_pct"]
+            df6 = sheets["M6_ChinhLieu"]
+            st.session_state.m6_dose = df6[[c for c in cols_m6 if c in df6.columns]].to_dict(orient="records")
+        if "M7_TuVan" in sheets:
+            cols_m7 = [
+                "member_id", "member_name", "department", "target_counsel_pct",
+                "coun_t2", "tot_t2", "coun_t3", "tot_t3", "coun_t4", "tot_t4",
+                "coun_t5", "tot_t5", "coun_t6", "tot_t6",
+            ]
+            df7 = sheets["M7_TuVan"]
+            st.session_state.m7_counsel = df7[[c for c in cols_m7 if c in df7.columns]].to_dict(orient="records")
+        if "CauHinh_TrongSo" in sheets and not sheets["CauHinh_TrongSo"].empty:
+            w_row = sheets["CauHinh_TrongSo"].iloc[0].to_dict()
+            for k in st.session_state.weights:
+                if k in w_row and pd.notna(w_row[k]):
+                    st.session_state.weights[k] = int(w_row[k])
+    else:
+        # Trường hợp nạp file danh sách nhân sự 1 Sheet như 'DS tổ dls.xlsx'
+        first_sheet_df = list(sheets.values())[0]
+        parsed_members = parse_member_sheet_from_excel_df(first_sheet_df)
+        if parsed_members is None:
+            raise ValueError("Không tìm thấy cột 'Họ và tên Dược sĩ' hoặc Sheet 'M1_NhanSu' trong file Excel.")
+        st.session_state.members = parsed_members
+        m2, m3, m4, m5, m6, m7 = generate_all_modules_from_auto_assignment(
+            st.session_state.members, workload_scale=1.0
+        )
+        st.session_state.m2_assignments = m2
+        st.session_state.m3_hsba = m3
+        st.session_state.m4_rx = m4
+        st.session_state.m5_consult = m5
+        st.session_state.m6_dose = m6
+        st.session_state.m7_counsel = m7
 
     st.session_state.editor_ver += 1
     save_state_to_disk()
@@ -1158,7 +1223,6 @@ def cb_sync_module_1():
                 if m["id"] == mid:
                     for c, val in cols.items():
                         m[c] = val
-                    # Đồng bộ tên, khoa, tính cách, năng lực sang các Module 2-7
                     for mod_list in [
                         st.session_state.m2_assignments,
                         st.session_state.m3_hsba,
@@ -1193,7 +1257,6 @@ def cb_sync_module_2():
                 if item["member_id"] == mid:
                     for c, val in cols.items():
                         item[c] = val
-                    # Liên thông chỉ tiêu xuống Module 3-7
                     for x in st.session_state.m3_hsba:
                         if x["member_id"] == mid:
                             x["target_week"] = int(item["hsba_target_week"])
@@ -1327,7 +1390,7 @@ def cb_sync_module_7():
     save_state_to_disk()
 
 
-# Khởi tạo dữ liệu an toàn (Tự động khôi phục từ file autosave nếu có)
+# Khởi tạo dữ liệu an toàn
 ensure_session_state_initialized(force_reset=False)
 
 
@@ -1335,7 +1398,7 @@ ensure_session_state_initialized(force_reset=False)
 # THANH BÊN (SIDEBAR): ĐIỀU KHIỂN TRỌNG SỐ KPI & ĐỒNG BỘ EXCEL (.XLSX)
 # ==============================================================================
 with st.sidebar:
-    st.markdown("## 🧩 QUẢN TRỊ KPI CHUẨN EXCEL")
+    st.markdown("## 🧩 QUẢN TRỊ KPI TỔ DLS (15 TV)")
     st.caption(f"🟢 Tự động lưu lúc: **{st.session_state.get('last_saved_time', 'Mới khởi tạo')}**")
 
     selected_subsystem = st.multiselect(
@@ -1351,7 +1414,6 @@ with st.sidebar:
         max_value=120.0,
         value=float(st.session_state.get("max_score_cap", 100.0)),
         step=5.0,
-        help="100 = Chuẩn cơ bản; 110-120 = Cho phép cộng điểm thưởng khi vượt định mức KPI tuần",
     )
     st.session_state.max_score_cap = max_score_cap
 
@@ -1398,7 +1460,6 @@ df_master_kpi = compute_master_kpi_module8(
     st.session_state.weights,
 )
 
-# Tiếp tục phần xuất/nhập Excel ở Sidebar sau khi đã có bảng điểm mới nhất
 with st.sidebar:
     st.markdown("### 📊 Xuất / Nhập File Excel (.xlsx)")
     excel_bytes = export_all_to_excel_bytes(
@@ -1408,7 +1469,7 @@ with st.sidebar:
         st.download_button(
             label="📥 Tải xuống File Excel 9 Sheet (.xlsx)",
             data=excel_bytes,
-            file_name="he_thong_kpi_duoc_lam_sang_9_sheet.xlsx",
+            file_name="he_thong_kpi_to_dls_15_thanh_vien.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
             type="primary",
@@ -1419,19 +1480,20 @@ with st.sidebar:
     st.download_button(
         label="⬇️ Tải xuống Bản sao lưu (.json)",
         data=json.dumps(get_current_payload(), ensure_ascii=False, indent=2),
-        file_name="he_thong_kpi_duoc_lam_sang.json",
+        file_name="he_thong_kpi_to_dls_15tv.json",
         mime="application/json",
         use_container_width=True,
     )
 
-    uploaded_file = st.file_uploader("⬆️ Chọn file Excel (.xlsx) hoặc (.json)", type=["xlsx", "json"])
+    uploaded_file = st.file_uploader(
+        "⬆️ Nạp file 'DS tổ dls.xlsx', Excel 9 Sheet (.xlsx) hoặc (.json)", type=["xlsx", "json"]
+    )
     if uploaded_file is not None:
-        # Nút xác nhận nạp riêng biệt để KHÔNG bao giờ tự động ghi đè khi đang sửa bảng
         if st.button("✅ Xác nhận Nạp File vừa chọn vào Hệ thống", type="primary", use_container_width=True):
             try:
                 if uploaded_file.name.lower().endswith(".xlsx"):
                     import_from_excel_file(uploaded_file)
-                    st.success("Đã nạp toàn bộ các Sheet từ file Excel thành công!")
+                    st.success("Đã nạp dữ liệu từ file Excel thành công!")
                     st.rerun()
                 else:
                     loaded = json.load(uploaded_file)
@@ -1474,7 +1536,7 @@ with st.sidebar:
         save_state_to_disk()
         st.rerun()
 
-    if st.button("🔄 Khôi phục Dữ liệu Mẫu Mặc định", use_container_width=True):
+    if st.button("🔄 Khôi phục Mặc định 15 Thành viên Tổ DLS", use_container_width=True):
         ensure_session_state_initialized(force_reset=True)
         st.rerun()
 
@@ -1485,9 +1547,9 @@ filtered_ids = set(df_master_filtered["id"].tolist())
 # ==============================================================================
 # TIÊU ĐỀ CHÍNH & BẢNG CHỈ SỐ TỔNG QUAN 6 TRỤ CỘT
 # ==============================================================================
-st.title("🏥 HỆ THỐNG QUẢN TRỊ, CHẤM ĐIỂM KPI - TỔ DƯỢC LÂM SÀNG")
+st.title(f"🏥 HỆ THỐNG QUẢN TRỊ & CHẤM ĐIỂM KPI - TỔ DƯỢC LÂM SÀNG ({len(st.session_state.members)} THÀNH VIÊN)")
 st.markdown(
-    "**Chế độ Live-Excel: Sửa bất kỳ ô nào và nhấn `Enter` hoặc `Tab`, hệ thống tự động lưu vào ổ cứng và tính lại Tổng tuần + Điểm KPI tức thì**"
+    "**Danh sách 15 Dược sĩ Tổ Dược lâm sàng chuẩn theo file `DS tổ dls.xlsx` • Tự động lưu và nhảy số KPI tức thời khi sửa bất kỳ ô nào**"
 )
 
 k1, k2, k3, k4, k5, k6 = st.columns(6)
@@ -1545,7 +1607,7 @@ with k6:
     tab_m8,
 ) = st.tabs(
     [
-        "👥 Module 1: Hồ sơ Nhân sự",
+        "👥 Module 1: Hồ sơ 15 Thành viên",
         "🤖 Module 2: Phân công & Chỉ tiêu Tuần",
         "📁 Module 3: Hồ sơ Bệnh án (T2–T6)",
         "💊 Module 4: Duyệt Đơn Ngoại & Nội trú",
@@ -1560,9 +1622,9 @@ with k6:
 # MODULE 1: CÀI ĐẶT NHÂN SỰ, KHOA LÂM SÀNG, TÍNH CÁCH & NĂNG LỰC
 # ------------------------------------------------------------------------------
 with tab_m1:
-    st.subheader("👥 Module 1: Cài đặt Khoa Lâm sàng, Nhóm Tính cách & Năng lực")
+    st.subheader("👥 Module 1: Danh sách 15 Thành viên Tổ Dược Lâm Sàng (Chuẩn theo file `DS tổ dls.xlsx`)")
     st.info(
-        "💡 Mọi chỉnh sửa tên, khoa phụ trách, tính cách và điểm năng lực đều được **tự động lưu ngay khi nhấn Enter**."
+        "💡 Bạn có thể chỉnh sửa trực tiếp **Điểm Năng lực (50–100)**, **Khoa Lâm sàng phụ trách**, **Nhóm Tính cách** hoặc **Năng lực chuyên môn/Nhiệm vụ** ngay trên bảng; hệ thống tự động lưu ngay lập tức."
     )
 
     m1_cols = [
@@ -1585,22 +1647,22 @@ with tab_m1:
         column_config={
             "id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
             "name": st.column_config.TextColumn("Họ và tên Dược sĩ", width="medium"),
-            "code_role": st.column_config.TextColumn("Chức danh chuyên môn", width="medium"),
+            "code_role": st.column_config.TextColumn("Chức danh chuyên môn", width="small"),
             "subsystem": st.column_config.SelectboxColumn("Phân hệ", options=SUBSYSTEMS, width="medium"),
             "department": st.column_config.SelectboxColumn(
-                "Khoa Lâm sàng phụ trách", options=CLINICAL_DEPARTMENTS, width="medium"
+                "Khoa lâm sàng phụ trách", options=CLINICAL_DEPARTMENTS, width="medium"
             ),
             "personality_tag": st.column_config.SelectboxColumn(
-                "Nhóm Tính cách Chủ đạo", options=PERSONALITY_TAGS, width="medium"
+                "Nhóm tính cách", options=PERSONALITY_TAGS, width="medium"
             ),
             "skill_score": st.column_config.NumberColumn(
-                "Điểm Năng lực (50-100)", min_value=50, max_value=100, step=1, width="small"
+                "Điểm năng lực (50-100)", min_value=50, max_value=100, step=1, width="small"
             ),
             "sla_compliance": st.column_config.NumberColumn(
                 "Tuân thủ SLA (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%", width="small"
             ),
-            "personality": st.column_config.TextColumn("Mô tả Tính cách chi tiết", width="large"),
-            "competencies": st.column_config.TextColumn("Năng lực chuyên môn & Công cụ", width="large"),
+            "personality": st.column_config.TextColumn("Mô tả tính cách chi tiết", width="large"),
+            "competencies": st.column_config.TextColumn("Năng lực chuyên môn và công cụ", width="large"),
         },
         use_container_width=True,
         hide_index=True,
@@ -1610,7 +1672,7 @@ with tab_m1:
     )
 
     if st.button(
-        "⚡ Tính lại Định mức Chỉ tiêu Tuần theo Khoa/Tính cách mới (Giữ nguyên số thực tế Thứ 2–Thứ 6 đã nhập)",
+        "⚡ Tính lại Định mức Chỉ tiêu Tuần theo Khoa/Điểm năng lực mới (Giữ nguyên số thực tế Thứ 2–Thứ 6 đã nhập)",
         type="primary",
         use_container_width=True,
     ):
@@ -1835,7 +1897,7 @@ with tab_m4:
 with tab_m5:
     st.subheader("🩺 Module 5 (Tiêu chí 3): Hội chẩn Lâm sàng Hàng ngày (Thứ 2 – Thứ 6)")
     st.caption(
-        "Công thức chuẩn Excel: **Điểm Module 5 = 65% × (% Hoàn thành số lượng hội chẩn) + 35% × (% Bác sĩ đồng thuận)** (nếu số ca thực hiện = 0 khi có giao chỉ tiêu thì điểm = 0)."
+        "Công thức chuẩn Excel: **Điểm Module 5 = 65% × (% Hoàn thành số lượng hội chẩn) + 35% × (% Bác sĩ đồng thuận)**."
     )
 
     df_m5_view = df_m5_scored[df_m5_scored["member_id"].isin(filtered_ids)].copy()
@@ -2056,9 +2118,9 @@ with tab_m8:
     with col_dl_xlsx:
         if excel_bytes is not None:
             st.download_button(
-                label="📥 Xuất Toàn bộ 9 Sheet ra File Excel (.xlsx)",
+                label="📥 Xuất Toàn bộ 9 Sheet (15 Thành viên) ra File Excel (.xlsx)",
                 data=excel_bytes,
-                file_name="he_thong_kpi_duoc_lam_sang_9_sheet.xlsx",
+                file_name="he_thong_kpi_to_dls_15_thanh_vien.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary",
                 use_container_width=True,
@@ -2068,14 +2130,14 @@ with tab_m8:
         st.download_button(
             label="📥 Xuất Bảng Tổng hợp KPI (Module 8) ra CSV",
             data=csv_master,
-            file_name="bang_kpi_tong_hop_module8.csv",
+            file_name="bang_kpi_tong_hop_15_tv_dls.csv",
             mime="text/csv",
             use_container_width=True,
         )
 
     ch1, ch2 = st.columns(2)
     with ch1:
-        st.markdown("##### 📈 Biểu đồ Tổng Điểm KPI & Điểm Thành phần (Module 3 – Module 7)")
+        st.markdown("##### 📈 Biểu đồ Tổng Điểm KPI & Điểm Thành phần (15 Thành viên)")
         chart_scores = df_kpi_sorted.set_index("name")[
             ["kpi_total", "score_m3", "score_m4", "score_m5", "score_m6", "score_m7"]
         ]
