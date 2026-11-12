@@ -6,10 +6,166 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Hệ thống Quản trị & Chấm điểm KPI - Tổ Dược Lâm Sàng (15 Thành viên)",
+    page_title="Quản trị KPI - Tổ Dược Lâm Sàng",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
+)
+
+# ==============================================================================
+# GIAO DIỆN CSS CHUẨN FONT ARIAL, CÂN ĐỐI CỠ CHỮ & THIẾT KẾ HIỆN ĐẠI
+# ==============================================================================
+st.markdown(
+    """
+    <style>
+    /* Áp dụng phông chữ Arial toàn hệ thống */
+    html, body, [class*="css"], .stApp, h1, h2, h3, h4, h5, h6,
+    p, span, div, label, button, input, textarea,
+    [data-testid="stSidebar"], [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"], [data-testid="stMetricDelta"],
+    [data-baseweb="tab"] {
+        font-family: Arial, Helvetica, sans-serif !important;
+    }
+
+    /* Nền trang dịu mắt & thu gọn khoảng trống thừa phía trên */
+    .stApp {
+        background-color: #f8fafc;
+    }
+    .block-container {
+        padding-top: 1.2rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 98% !important;
+    }
+
+    /* Banner tiêu đề chính gọn gàng, cân đối */
+    .dls-header {
+        background: linear-gradient(135deg, #0f4c81 0%, #0284c7 100%);
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 8px rgba(15, 76, 129, 0.15);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dls-header-title {
+        font-size: 19px !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        letter-spacing: 0.2px;
+        color: #ffffff !important;
+    }
+    .dls-header-sub {
+        font-size: 12.5px !important;
+        color: #e0f2fe !important;
+        margin-top: 3px !important;
+    }
+    .dls-badge {
+        background: rgba(255, 255, 255, 0.18);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #ffffff;
+        white-space: nowrap;
+    }
+
+    /* Thẻ Metric KPI cân đối cỡ chữ */
+    [data-testid="stMetric"] {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #0284c7;
+        padding: 10px 14px !important;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    [data-testid="stMetricLabel"] p {
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        color: #475569 !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 19px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        line-height: 1.3 !important;
+    }
+    [data-testid="stMetricDelta"] {
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Thanh Tabs gọn đẹp, nằm trên 1 hàng ngang */
+    [data-baseweb="tab-list"] {
+        gap: 6px !important;
+        background-color: #e2e8f0;
+        padding: 5px 6px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    [data-baseweb="tab"] {
+        height: 36px !important;
+        padding: 0 14px !important;
+        border-radius: 6px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        background-color: transparent !important;
+        border: none !important;
+    }
+    [aria-selected="true"][data-baseweb="tab"] {
+        background-color: #ffffff !important;
+        color: #0284c7 !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Tiêu đề từng Module & chú thích */
+    .mod-title {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        margin: 4px 0 2px 0 !important;
+    }
+    .mod-desc {
+        font-size: 12.5px !important;
+        color: #64748b !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Thanh Tổng cộng Excel dưới mỗi bảng */
+    .excel-summary-bar {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-left: 4px solid #0284c7;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #0f172a;
+        margin-top: 6px;
+        margin-bottom: 10px;
+    }
+
+    /* Cân đối cỡ chữ Sidebar & Nút bấm */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e2e8f0;
+    }
+    [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        font-size: 14.5px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        margin-top: 8px !important;
+    }
+    .stButton > button, .stDownloadButton > button {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        padding: 0.35rem 0.85rem !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 STATE_VERSION = "v5.0_real_15_members_dls"
@@ -294,7 +450,6 @@ PERSONALITY_MODIFIERS = {
 
 
 def normalize_option(val, options, default_val):
-    """Chuẩn hóa chuỗi từ Excel (hoa/thường, dấu '&' và '-') khớp chính xác với danh mục chuẩn."""
     if pd.isna(val) or not str(val).strip():
         return default_val
     s = str(val).strip()
@@ -497,13 +652,8 @@ def get_default_members():
 
 
 def parse_member_sheet_from_excel_df(df_raw):
-    """
-    Hỗ trợ đọc trực tiếp Sheet 'DS tổ dls.xlsx' (kể cả khi dòng 1 là tiêu đề bảng
-    và dòng 2 mới là tên cột 'Mã TV', 'Họ và tên Dược sĩ', ...).
-    """
     df = df_raw.copy()
     if "Họ và tên Dược sĩ" not in df.columns:
-        # Tìm dòng chứa tiêu đề cột 'Họ và tên Dược sĩ'
         for idx, row in df.iterrows():
             row_vals = [str(v).strip() for v in row.values if pd.notna(v)]
             if any("Họ và tên" in v for v in row_vals):
@@ -709,7 +859,6 @@ def generate_all_modules_from_auto_assignment(members_list, workload_scale=1.0, 
 
 
 def recalculate_targets_keep_actuals(workload_scale=1.0):
-    """Chỉ tính toán lại Định mức Mục tiêu theo Khoa/Tính cách/Năng lực, GIỮ NGUYÊN số thực tế Thứ 2 - Thứ 6."""
     old_m2_map = {item["member_id"]: item for item in st.session_state.m2_assignments}
     new_m2 = []
     plan_map = {}
@@ -763,7 +912,7 @@ def recalculate_targets_keep_actuals(workload_scale=1.0):
 
 
 # ==============================================================================
-# CÁC HÀM CHẤM ĐIỂM CHUẨN EXCEL THỰC TẾ (XỬ LÝ ĐÚNG TRƯỜNG HỢP MỤC TIÊU = 0)
+# CÁC HÀM CHẤM ĐIỂM CHUẨN EXCEL THỰC TẾ
 # ==============================================================================
 def score_module_3_hsba(m3_list, max_cap=100.0):
     df = pd.DataFrame(m3_list).copy()
@@ -1035,7 +1184,6 @@ def load_state_from_disk():
 
 
 def load_initial_members():
-    """Nếu trong thư mục có sẵn file 'DS tổ dls.xlsx', tự động đọc danh sách từ file Excel đó."""
     if os.path.exists(DEFAULT_EXCEL_FILENAME):
         try:
             df_raw = pd.read_excel(DEFAULT_EXCEL_FILENAME, sheet_name=0)
@@ -1076,7 +1224,7 @@ def ensure_session_state_initialized(force_reset=False):
             },
         )
         st.session_state.max_score_cap = float(saved_data.get("max_score_cap", 100.0))
-        st.session_state.last_saved_time = saved_data.get("updated_at", "Đã khôi phục từ ổ cứng")
+        st.session_state.last_saved_time = saved_data.get("updated_at", "Đã lưu tự động")
     else:
         st.session_state.app_version = STATE_VERSION
         st.session_state.members = load_initial_members()
@@ -1129,11 +1277,6 @@ def export_all_to_excel_bytes(df_master, df_m3, df_m4, df_m5, df_m6, df_m7):
 
 
 def import_from_excel_file(uploaded_excel):
-    """
-    Hỗ trợ nạp CẢ 2 LOẠI FILE EXCEL:
-    1. File 9 Sheet xuất từ hệ thống ('M1_NhanSu', 'M2_PhanCong', ...)
-    2. File Danh sách nhân sự 1 Sheet ('DS tổ dls.xlsx' có cột 'Họ và tên Dược sĩ')
-    """
     sheets = pd.read_excel(uploaded_excel, sheet_name=None)
     if "M1_NhanSu" in sheets:
         st.session_state.members = sheets["M1_NhanSu"].to_dict(orient="records")
@@ -1179,7 +1322,6 @@ def import_from_excel_file(uploaded_excel):
                 if k in w_row and pd.notna(w_row[k]):
                     st.session_state.weights[k] = int(w_row[k])
     else:
-        # Trường hợp nạp file danh sách nhân sự 1 Sheet như 'DS tổ dls.xlsx'
         first_sheet_df = list(sheets.values())[0]
         parsed_members = parse_member_sheet_from_excel_df(first_sheet_df)
         if parsed_members is None:
@@ -1395,21 +1537,21 @@ ensure_session_state_initialized(force_reset=False)
 
 
 # ==============================================================================
-# THANH BÊN (SIDEBAR): ĐIỀU KHIỂN TRỌNG SỐ KPI & ĐỒNG BỘ EXCEL (.XLSX)
+# THANH BÊN (SIDEBAR): GỌN GÀNG, CÂN ĐỐI
 # ==============================================================================
 with st.sidebar:
-    st.markdown("## 🧩 QUẢN TRỊ KPI TỔ DLS (15 TV)")
-    st.caption(f"🟢 Tự động lưu lúc: **{st.session_state.get('last_saved_time', 'Mới khởi tạo')}**")
+    st.markdown("## 🏥 CẤU HÌNH HỆ THỐNG KPI")
+    st.caption(f"🟢 Đã lưu: **{st.session_state.get('last_saved_time', 'Mới khởi tạo')}**")
 
     selected_subsystem = st.multiselect(
-        "Lọc theo Phân hệ Chuyên môn",
+        "Lọc theo Phân hệ",
         options=SUBSYSTEMS,
         default=SUBSYSTEMS,
     )
 
-    st.markdown("### ⚖️ Trọng số & Trần điểm KPI")
+    st.markdown("### ⚖️ Trọng số & Trần điểm")
     max_score_cap = st.number_input(
-        "Trần điểm tối đa mỗi tiêu chí (100 - 120):",
+        "Trần điểm tối đa (100 - 120):",
         min_value=100.0,
         max_value=120.0,
         value=float(st.session_state.get("max_score_cap", 100.0)),
@@ -1418,12 +1560,12 @@ with st.sidebar:
     st.session_state.max_score_cap = max_score_cap
 
     w_cur = st.session_state.weights
-    w_m3_hsba = st.slider("1. Kiểm tra HSBA Tuần (%)", 0, 50, int(w_cur["w_m3_hsba"]), 5)
-    w_m4_rx = st.slider("2. Duyệt Đơn Ngoại & Nội trú (%)", 0, 50, int(w_cur["w_m4_rx"]), 5)
-    w_m5_consult = st.slider("3. Hội chẩn Lâm sàng (%)", 0, 50, int(w_cur["w_m5_consult"]), 5)
-    w_m6_dose = st.slider("4. Can thiệp Chỉnh liều (%)", 0, 50, int(w_cur["w_m6_dose"]), 5)
-    w_m7_counsel = st.slider("5. Tư vấn Đơn / Tổng đơn (%)", 0, 50, int(w_cur["w_m7_counsel"]), 5)
-    w_m2_task = st.slider("6. Công việc Phân công Tuần (%)", 0, 50, int(w_cur["w_m2_task"]), 5)
+    w_m3_hsba = st.slider("M3: Bệnh án Tuần (%)", 0, 50, int(w_cur["w_m3_hsba"]), 5)
+    w_m4_rx = st.slider("M4: Duyệt đơn (%)", 0, 50, int(w_cur["w_m4_rx"]), 5)
+    w_m5_consult = st.slider("M5: Hội chẩn (%)", 0, 50, int(w_cur["w_m5_consult"]), 5)
+    w_m6_dose = st.slider("M6: Chỉnh liều (%)", 0, 50, int(w_cur["w_m6_dose"]), 5)
+    w_m7_counsel = st.slider("M7: Tư vấn đơn (%)", 0, 50, int(w_cur["w_m7_counsel"]), 5)
+    w_m2_task = st.slider("M2: Nhiệm vụ tuần (%)", 0, 50, int(w_cur["w_m2_task"]), 5)
 
     weights_dict = {
         "w_m3_hsba": w_m3_hsba,
@@ -1437,7 +1579,7 @@ with st.sidebar:
         st.session_state.weights = weights_dict
         save_state_to_disk()
 
-    st.caption(f"Tổng trọng số: **{sum(weights_dict.values())}%** (tự động quy chuẩn thang 100)")
+    st.caption(f"Tổng trọng số: **{sum(weights_dict.values())}%** (quy chuẩn thang 100)")
 
 
 # ==============================================================================
@@ -1461,13 +1603,13 @@ df_master_kpi = compute_master_kpi_module8(
 )
 
 with st.sidebar:
-    st.markdown("### 📊 Xuất / Nhập File Excel (.xlsx)")
+    st.markdown("### 📊 Xuất / Nhập Excel")
     excel_bytes = export_all_to_excel_bytes(
         df_master_kpi, df_m3_scored, df_m4_scored, df_m5_scored, df_m6_scored, df_m7_scored
     )
     if excel_bytes is not None:
         st.download_button(
-            label="📥 Tải xuống File Excel 9 Sheet (.xlsx)",
+            label="📥 Xuất Excel 9 Sheet (.xlsx)",
             data=excel_bytes,
             file_name="he_thong_kpi_to_dls_15_thanh_vien.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1475,10 +1617,10 @@ with st.sidebar:
             type="primary",
         )
     else:
-        st.warning("Chưa cài thư viện `openpyxl`. Chạy `pip install openpyxl` để xuất file `.xlsx`.")
+        st.warning("Chưa cài `openpyxl`. Chạy `pip install openpyxl` để xuất `.xlsx`.")
 
     st.download_button(
-        label="⬇️ Tải xuống Bản sao lưu (.json)",
+        label="⬇️ Sao lưu cấu hình (.json)",
         data=json.dumps(get_current_payload(), ensure_ascii=False, indent=2),
         file_name="he_thong_kpi_to_dls_15tv.json",
         mime="application/json",
@@ -1486,14 +1628,14 @@ with st.sidebar:
     )
 
     uploaded_file = st.file_uploader(
-        "⬆️ Nạp file 'DS tổ dls.xlsx', Excel 9 Sheet (.xlsx) hoặc (.json)", type=["xlsx", "json"]
+        "⬆️ Nạp file Excel (.xlsx) hoặc (.json)", type=["xlsx", "json"]
     )
     if uploaded_file is not None:
-        if st.button("✅ Xác nhận Nạp File vừa chọn vào Hệ thống", type="primary", use_container_width=True):
+        if st.button("✅ Xác nhận Nạp File", type="primary", use_container_width=True):
             try:
                 if uploaded_file.name.lower().endswith(".xlsx"):
                     import_from_excel_file(uploaded_file)
-                    st.success("Đã nạp dữ liệu từ file Excel thành công!")
+                    st.success("Đã nạp dữ liệu Excel thành công!")
                     st.rerun()
                 else:
                     loaded = json.load(uploaded_file)
@@ -1509,13 +1651,13 @@ with st.sidebar:
                             st.session_state.weights = loaded["weights"]
                         st.session_state.editor_ver += 1
                         save_state_to_disk()
-                        st.success("Đã khôi phục dữ liệu từ file JSON thành công!")
+                        st.success("Đã khôi phục file JSON thành công!")
                         st.rerun()
             except Exception as exc:
-                st.error(f"Lỗi khi đọc file: {exc}")
+                st.error(f"Lỗi đọc file: {exc}")
 
-    st.markdown("### 🛠️ Tiện ích Tuần mới")
-    if st.button("🧹 Đặt số liệu Thứ 2–Thứ 6 về 0 (Nhập tuần mới)", use_container_width=True):
+    st.markdown("### 🛠️ Tiện ích")
+    if st.button("🧹 Đặt Thứ 2–Thứ 6 về 0 (Tuần mới)", use_container_width=True):
         for item in st.session_state.m3_hsba:
             for d in WEEKDAYS:
                 item[d] = 0
@@ -1536,7 +1678,7 @@ with st.sidebar:
         save_state_to_disk()
         st.rerun()
 
-    if st.button("🔄 Khôi phục Mặc định 15 Thành viên Tổ DLS", use_container_width=True):
+    if st.button("🔄 Khôi phục Mặc định 15 TV", use_container_width=True):
         ensure_session_state_initialized(force_reset=True)
         st.rerun()
 
@@ -1545,56 +1687,64 @@ df_master_filtered = df_master_kpi[df_master_kpi["subsystem"].isin(selected_subs
 filtered_ids = set(df_master_filtered["id"].tolist())
 
 # ==============================================================================
-# TIÊU ĐỀ CHÍNH & BẢNG CHỈ SỐ TỔNG QUAN 6 TRỤ CỘT
+# BANNER TIÊU ĐỀ GỌN ĐẸP & 6 THẺ KPI TỔNG QUAN
 # ==============================================================================
-st.title(f"🏥 HỆ THỐNG QUẢN TRỊ & CHẤM ĐIỂM KPI - TỔ DƯỢC LÂM SÀNG ({len(st.session_state.members)} THÀNH VIÊN)")
 st.markdown(
-    "**Danh sách 15 Dược sĩ Tổ Dược lâm sàng chuẩn theo file `DS tổ dls.xlsx` • Tự động lưu và nhảy số KPI tức thời khi sửa bất kỳ ô nào**"
+    f"""
+    <div class="dls-header">
+        <div>
+            <div class="dls-header-title">🏥 HỆ THỐNG QUẢN TRỊ & CHẤM ĐIỂM KPI — TỔ DƯỢC LÂM SÀNG</div>
+            <div class="dls-header-sub">Liên thông tự động 8 Module theo chuẩn Excel • Sửa trực tiếp trên bảng, tự động lưu và nhảy điểm KPI tức thì</div>
+        </div>
+        <div class="dls-badge">👥 {len(st.session_state.members)} Dược sĩ Lâm sàng</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 k1, k2, k3, k4, k5, k6 = st.columns(6)
 with k1:
     st.metric(
-        "M3: Bệnh án Tuần (T2–T6)",
+        "📁 M3: Bệnh án",
         f"{int(df_master_filtered['done_week'].sum()):,}/{int(df_master_filtered['target_week'].sum()):,}",
-        f"Điểm TB: {df_master_filtered['score_m3'].mean():.1f}",
+        f"TB: {df_master_filtered['score_m3'].mean():.1f} đ",
     )
 with k2:
     st.metric(
-        "M4: Đơn Ngoại & Nội trú",
+        "💊 M4: Duyệt đơn",
         f"{int(df_master_filtered['done_total_rx'].sum()):,}/{int(df_master_filtered['target_total_rx'].sum()):,}",
-        f"Điểm TB: {df_master_filtered['score_m4'].mean():.1f}",
+        f"TB: {df_master_filtered['score_m4'].mean():.1f} đ",
     )
 with k3:
     st.metric(
-        "M5: Hội chẩn Lâm sàng",
+        "🩺 M5: Hội chẩn",
         f"{int(df_master_filtered['done_consult_week'].sum()):,}/{int(df_master_filtered['target_consult_week'].sum()):,}",
-        f"Điểm TB: {df_master_filtered['score_m5'].mean():.1f}",
+        f"TB: {df_master_filtered['score_m5'].mean():.1f} đ",
     )
 with k4:
     st.metric(
-        "M6: Can thiệp Chỉnh liều",
+        "⚖️ M6: Chỉnh liều",
         f"{int(df_master_filtered['done_dose_week'].sum()):,}/{int(df_master_filtered['target_dose_week'].sum()):,}",
-        f"Điểm TB: {df_master_filtered['score_m6'].mean():.1f}",
+        f"TB: {df_master_filtered['score_m6'].mean():.1f} đ",
     )
 with k5:
     tot_c = int(df_master_filtered["counseled_week"].sum())
     tot_rx = int(df_master_filtered["total_rx_week"].sum())
     pct_c = (tot_c / tot_rx * 100.0) if tot_rx > 0 else 0.0
     st.metric(
-        "M7: Tư vấn / Tổng đơn",
+        "🗣️ M7: Tư vấn",
         f"{tot_c:,}/{tot_rx:,} ({pct_c:.1f}%)",
-        f"Điểm TB: {df_master_filtered['score_m7'].mean():.1f}",
+        f"TB: {df_master_filtered['score_m7'].mean():.1f} đ",
     )
 with k6:
     st.metric(
-        "M8: Tổng Điểm KPI Tổ",
+        "🏆 M8: Điểm KPI Tổ",
         f"{df_master_filtered['kpi_total'].mean():.1f} / 100",
         f"{int((df_master_filtered['kpi_rank'] == 'Xuất sắc (A+)').sum())}/{len(df_master_filtered)} đạt A+",
     )
 
 # ==============================================================================
-# GIAO DIỆN 8 MODULE ĐỘC LẬP (8 TABS CHUYÊN BIỆT)
+# THANH 8 TABS THU GỌN (HIỂN THỊ TRỌN VẸN TRÊN 1 DÒNG NGANG)
 # ==============================================================================
 (
     tab_m1,
@@ -1607,24 +1757,25 @@ with k6:
     tab_m8,
 ) = st.tabs(
     [
-        "👥 Module 1: Hồ sơ 15 Thành viên",
-        "🤖 Module 2: Phân công & Chỉ tiêu Tuần",
-        "📁 Module 3: Hồ sơ Bệnh án (T2–T6)",
-        "💊 Module 4: Duyệt Đơn Ngoại & Nội trú",
-        "🩺 Module 5: Hội chẩn Lâm sàng",
-        "⚖️ Module 6: Can thiệp Chỉnh liều",
-        "🗣️ Module 7: Tư vấn Đơn / Tổng đơn",
-        "🏆 Module 8: Tổng hợp & Xuất Excel KPI",
+        "👥 M1: Nhân sự",
+        "🤖 M2: Phân công",
+        "📁 M3: Bệnh án",
+        "💊 M4: Duyệt đơn",
+        "🩺 M5: Hội chẩn",
+        "⚖️ M6: Chỉnh liều",
+        "🗣️ M7: Tư vấn",
+        "🏆 M8: Tổng hợp KPI",
     ]
 )
 
 # ------------------------------------------------------------------------------
-# MODULE 1: CÀI ĐẶT NHÂN SỰ, KHOA LÂM SÀNG, TÍNH CÁCH & NĂNG LỰC
+# MODULE 1: NHÂN SỰ
 # ------------------------------------------------------------------------------
 with tab_m1:
-    st.subheader("👥 Module 1: Danh sách 15 Thành viên Tổ Dược Lâm Sàng (Chuẩn theo file `DS tổ dls.xlsx`)")
-    st.info(
-        "💡 Bạn có thể chỉnh sửa trực tiếp **Điểm Năng lực (50–100)**, **Khoa Lâm sàng phụ trách**, **Nhóm Tính cách** hoặc **Năng lực chuyên môn/Nhiệm vụ** ngay trên bảng; hệ thống tự động lưu ngay lập tức."
+    st.markdown('<div class="mod-title">👥 M1: Danh sách 15 Thành viên Tổ Dược Lâm Sàng</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Chỉnh sửa trực tiếp Khoa phụ trách, Nhóm tính cách, Điểm năng lực (50–100) hoặc Nhiệm vụ chuyên môn; hệ thống tự động lưu khi nhấn Enter.</div>',
+        unsafe_allow_html=True,
     )
 
     m1_cols = [
@@ -1645,24 +1796,24 @@ with tab_m1:
     st.data_editor(
         df_m1_view,
         column_config={
-            "id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "name": st.column_config.TextColumn("Họ và tên Dược sĩ", width="medium"),
-            "code_role": st.column_config.TextColumn("Chức danh chuyên môn", width="small"),
+            "code_role": st.column_config.TextColumn("Chức danh", width="small"),
             "subsystem": st.column_config.SelectboxColumn("Phân hệ", options=SUBSYSTEMS, width="medium"),
             "department": st.column_config.SelectboxColumn(
-                "Khoa lâm sàng phụ trách", options=CLINICAL_DEPARTMENTS, width="medium"
+                "Khoa phụ trách", options=CLINICAL_DEPARTMENTS, width="medium"
             ),
             "personality_tag": st.column_config.SelectboxColumn(
                 "Nhóm tính cách", options=PERSONALITY_TAGS, width="medium"
             ),
             "skill_score": st.column_config.NumberColumn(
-                "Điểm năng lực (50-100)", min_value=50, max_value=100, step=1, width="small"
+                "Năng lực", min_value=50, max_value=100, step=1, width="small"
             ),
             "sla_compliance": st.column_config.NumberColumn(
-                "Tuân thủ SLA (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%", width="small"
+                "SLA (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%", width="small"
             ),
-            "personality": st.column_config.TextColumn("Mô tả tính cách chi tiết", width="large"),
-            "competencies": st.column_config.TextColumn("Năng lực chuyên môn và công cụ", width="large"),
+            "personality": st.column_config.TextColumn("Mô tả tính cách", width="medium"),
+            "competencies": st.column_config.TextColumn("Năng lực chuyên môn & Nhiệm vụ", width="large"),
         },
         use_container_width=True,
         hide_index=True,
@@ -1672,26 +1823,29 @@ with tab_m1:
     )
 
     if st.button(
-        "⚡ Tính lại Định mức Chỉ tiêu Tuần theo Khoa/Điểm năng lực mới (Giữ nguyên số thực tế Thứ 2–Thứ 6 đã nhập)",
+        "⚡ Tính lại Chỉ tiêu Tuần theo Khoa/Năng lực mới (Giữ nguyên số Thứ 2–Thứ 6 đã nhập)",
         type="primary",
-        use_container_width=True,
     ):
         recalculate_targets_keep_actuals(workload_scale=1.0)
         st.session_state.editor_ver += 1
         save_state_to_disk()
-        st.success("Đã cập nhật định mức chỉ tiêu tuần mà vẫn bảo toàn 100% số liệu thực tế Thứ 2 – Thứ 6!")
+        st.success("Đã cập nhật định mức chỉ tiêu tuần và bảo toàn 100% số liệu Thứ 2 – Thứ 6!")
         st.rerun()
 
 # ------------------------------------------------------------------------------
-# MODULE 2: TỰ ĐỘNG PHÂN CÔNG CÔNG VIỆC & ĐỊNH MỨC MỤC TIÊU HÀNG TUẦN
+# MODULE 2: PHÂN CÔNG & CHỈ TIÊU TUẦN
 # ------------------------------------------------------------------------------
 with tab_m2:
-    st.subheader("🤖 Module 2: Phân công Công việc & Định mức Mục tiêu Hàng tuần (Liên thông 2 chiều với Module 3–7)")
+    st.markdown('<div class="mod-title">🤖 M2: Phân công Công việc & Định mức Chỉ tiêu Tuần</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Liên thông 2 chiều với các bảng M3–M7: Sửa chỉ tiêu tại đây sẽ tự động cập nhật sang các Module chấm điểm.</div>',
+        unsafe_allow_html=True,
+    )
 
     col_scale, col_btn_keep, col_btn_full = st.columns([1.2, 1.4, 1.4])
     with col_scale:
         workload_scale = st.slider(
-            "Hệ số tải công việc toàn viện tuần này:",
+            "Hệ số tải công việc tuần:",
             min_value=0.5,
             max_value=1.5,
             value=1.0,
@@ -1700,19 +1854,18 @@ with tab_m2:
     with col_btn_keep:
         st.write("")
         if st.button(
-            "🎯 Cập nhật Chỉ tiêu theo Hệ số tải (Giữ nguyên số Thứ 2–Thứ 6)",
+            "🎯 Cập nhật Chỉ tiêu (Giữ số Thứ 2–Thứ 6)",
             type="primary",
             use_container_width=True,
         ):
             recalculate_targets_keep_actuals(workload_scale=workload_scale)
             st.session_state.editor_ver += 1
             save_state_to_disk()
-            st.success(f"Đã cập nhật chỉ tiêu tuần với hệ số tải {workload_scale}x (giữ nguyên số thực tế)!")
             st.rerun()
     with col_btn_full:
         st.write("")
         if st.button(
-            "🤖 Khởi tạo lại cả Chỉ tiêu & Số liệu Mẫu (Thứ 2–Thứ 6)",
+            "🤖 Khởi tạo lại cả Chỉ tiêu & Số mẫu",
             use_container_width=True,
         ):
             m2, m3, m4, m5, m6, m7 = generate_all_modules_from_auto_assignment(
@@ -1735,23 +1888,23 @@ with tab_m2:
     st.data_editor(
         df_m2_view,
         column_config={
-            "member_id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "member_id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "member_name": st.column_config.TextColumn("Họ và tên", disabled=True, width="medium"),
-            "department": st.column_config.TextColumn("Khoa Lâm sàng", disabled=True, width="medium"),
-            "personality_tag": st.column_config.TextColumn("Nhóm Tính cách", disabled=True, width="medium"),
+            "department": st.column_config.TextColumn("Khoa phụ trách", disabled=True, width="medium"),
+            "personality_tag": None,
             "skill_score": st.column_config.NumberColumn("Năng lực", disabled=True, width="small"),
-            "assigned_task": st.column_config.TextColumn("Nội dung Công việc Phân công Tuần", width="large"),
-            "hsba_target_week": st.column_config.NumberColumn("Chỉ tiêu HSBA/Tuần", min_value=0, max_value=1000, step=5),
-            "rx_out_target_week": st.column_config.NumberColumn("Chỉ tiêu Đơn Ngoại/Tuần", min_value=0, max_value=3000, step=5),
-            "rx_in_target_week": st.column_config.NumberColumn("Chỉ tiêu Đơn Nội/Tuần", min_value=0, max_value=3000, step=5),
-            "consult_target_week": st.column_config.NumberColumn("Chỉ tiêu Hội chẩn/Tuần", min_value=0, max_value=500, step=1),
-            "dose_target_week": st.column_config.NumberColumn("Chỉ tiêu Chỉnh liều/Tuần", min_value=0, max_value=500, step=1),
+            "assigned_task": st.column_config.TextColumn("Công việc Phân công Tuần", width="large"),
+            "hsba_target_week": st.column_config.NumberColumn("CT Bệnh án", min_value=0, max_value=1000, step=5),
+            "rx_out_target_week": st.column_config.NumberColumn("CT Đơn Ngoại", min_value=0, max_value=3000, step=5),
+            "rx_in_target_week": st.column_config.NumberColumn("CT Đơn Nội", min_value=0, max_value=3000, step=5),
+            "consult_target_week": st.column_config.NumberColumn("CT Hội chẩn", min_value=0, max_value=500, step=1),
+            "dose_target_week": st.column_config.NumberColumn("CT Chỉnh liều", min_value=0, max_value=500, step=1),
             "rx_total_week_est": None,
             "counsel_target_pct": st.column_config.NumberColumn(
-                "Mục tiêu Tư vấn (%)", min_value=0.0, max_value=100.0, step=1.0, format="%.1f%%"
+                "CT Tư vấn (%)", min_value=0.0, max_value=100.0, step=1.0, format="%.1f%%"
             ),
             "assignment_completion_pct": st.column_config.NumberColumn(
-                "Điểm Hoàn thành Nhiệm vụ Tuần (%)", min_value=0.0, max_value=120.0, step=1.0, format="%.1f%%"
+                "Điểm M2 (%)", min_value=0.0, max_value=120.0, step=1.0, format="%.1f%%"
             ),
         },
         use_container_width=True,
@@ -1761,12 +1914,13 @@ with tab_m2:
     )
 
 # ------------------------------------------------------------------------------
-# MODULE 3: TIÊU CHÍ 1 — KIỂM TRA HỒ SƠ BỆNH ÁN (THỨ 2 ĐẾN THỨ 6)
+# MODULE 3: BỆNH ÁN (THỨ 2 ĐẾN THỨ 6)
 # ------------------------------------------------------------------------------
 with tab_m3:
-    st.subheader("📁 Module 3 (Tiêu chí 1): Kiểm tra Hồ sơ Bệnh án từ Thứ 2 đến Thứ 6")
-    st.caption(
-        "Gõ số trực tiếp vào cột **Mục tiêu** hoặc **Thứ 2 – Thứ 6** và nhấn `Enter`, cột **Tổng HSBA Cuối tuần**, **Chênh lệch** và **Điểm Module 3** sẽ tự động tính ngay lập tức như Excel."
+    st.markdown('<div class="mod-title">📁 M3: Kiểm tra Hồ sơ Bệnh án (Thứ 2 – Thứ 6)</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Công thức: Điểm M3 = (Tổng bệnh án Thứ 2 đến Thứ 6 / Mục tiêu tuần) × 100.</div>',
+        unsafe_allow_html=True,
     )
 
     df_m3_view = df_m3_scored[df_m3_scored["member_id"].isin(filtered_ids)].copy()
@@ -1775,20 +1929,20 @@ with tab_m3:
     st.data_editor(
         df_m3_view,
         column_config={
-            "member_id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "member_id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "member_name": st.column_config.TextColumn("Họ và tên Dược sĩ", disabled=True, width="medium"),
-            "department": st.column_config.TextColumn("Khoa Lâm sàng", disabled=True, width="medium"),
-            "target_week": st.column_config.NumberColumn("Mục tiêu HSBA Tuần", min_value=0, max_value=1000, step=5),
+            "department": st.column_config.TextColumn("Khoa phụ trách", disabled=True, width="medium"),
+            "target_week": st.column_config.NumberColumn("Mục tiêu", min_value=0, max_value=1000, step=5),
             "Thứ 2": st.column_config.NumberColumn("Thứ 2", min_value=0, max_value=300, step=1),
             "Thứ 3": st.column_config.NumberColumn("Thứ 3", min_value=0, max_value=300, step=1),
             "Thứ 4": st.column_config.NumberColumn("Thứ 4", min_value=0, max_value=300, step=1),
             "Thứ 5": st.column_config.NumberColumn("Thứ 5", min_value=0, max_value=300, step=1),
             "Thứ 6": st.column_config.NumberColumn("Thứ 6", min_value=0, max_value=300, step=1),
-            "done_week": st.column_config.NumberColumn("Tổng HSBA Cuối tuần", disabled=True),
-            "diff_week": st.column_config.NumberColumn("Chênh lệch (+/-)", disabled=True),
-            "completion_pct": st.column_config.NumberColumn("Đạt Mục tiêu (%)", disabled=True, format="%.1f%%"),
+            "done_week": st.column_config.NumberColumn("Tổng Tuần", disabled=True),
+            "diff_week": st.column_config.NumberColumn("Lệch (+/-)", disabled=True),
+            "completion_pct": st.column_config.NumberColumn("Tỷ lệ (%)", disabled=True, format="%.1f%%"),
             "score_m3": st.column_config.ProgressColumn(
-                "Điểm Module 3", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
+                "Điểm M3", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
             ),
         },
         use_container_width=True,
@@ -1798,20 +1952,25 @@ with tab_m3:
     )
 
     st.markdown(
-        f"**📊 Dòng Tổng cộng Excel (Module 3):** Mục tiêu tuần: `{int(df_m3_view['target_week'].sum()):,}` | "
-        f"Thứ 2: `{int(df_m3_view['Thứ 2'].sum()):,}` | Thứ 3: `{int(df_m3_view['Thứ 3'].sum()):,}` | "
-        f"Thứ 4: `{int(df_m3_view['Thứ 4'].sum()):,}` | Thứ 5: `{int(df_m3_view['Thứ 5'].sum()):,}` | "
-        f"Thứ 6: `{int(df_m3_view['Thứ 6'].sum()):,}` | **Tổng thực hiện: `{int(df_m3_view['done_week'].sum()):,}`** | "
-        f"**Điểm TB Module 3: `{df_m3_view['score_m3'].mean():.1f}`**"
+        f"""<div class="excel-summary-bar">
+        📊 <b>Tổng cộng M3:</b> Mục tiêu: <b>{int(df_m3_view['target_week'].sum()):,}</b> &nbsp;|&nbsp;
+        T2: <b>{int(df_m3_view['Thứ 2'].sum()):,}</b> • T3: <b>{int(df_m3_view['Thứ 3'].sum()):,}</b> •
+        T4: <b>{int(df_m3_view['Thứ 4'].sum()):,}</b> • T5: <b>{int(df_m3_view['Thứ 5'].sum()):,}</b> •
+        T6: <b>{int(df_m3_view['Thứ 6'].sum()):,}</b> &nbsp;|&nbsp;
+        Tổng thực hiện: <b>{int(df_m3_view['done_week'].sum()):,}</b> &nbsp;|&nbsp;
+        Điểm TB M3: <b>{df_m3_view['score_m3'].mean():.1f} đ</b>
+        </div>""",
+        unsafe_allow_html=True,
     )
 
 # ------------------------------------------------------------------------------
-# MODULE 4: TIÊU CHÍ 2 — DUYỆT ĐƠN THUỐC NGOẠI TRÚ & NỘI TRÚ HÀNG NGÀY
+# MODULE 4: DUYỆT ĐƠN NGOẠI TRÚ & NỘI TRÚ
 # ------------------------------------------------------------------------------
 with tab_m4:
-    st.subheader("💊 Module 4 (Tiêu chí 2): Duyệt Đơn thuốc Ngoại trú & Nội trú Hàng ngày (Thứ 2 – Thứ 6)")
-    st.caption(
-        "Hỗ trợ nhập `Mục tiêu = 0` đối với Dược sĩ chỉ phụ trách Nội trú hoặc chỉ phụ trách Ngoại trú (tự động tính 100% trọng số vào loại đơn được phân công)."
+    st.markdown('<div class="mod-title">💊 M4: Duyệt Đơn Ngoại trú & Nội trú (Thứ 2 – Thứ 6)</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Cho phép nhập Mục tiêu = 0 nếu chỉ phụ trách Nội trú hoặc chỉ phụ trách Ngoại trú (tự động tính 100% trọng số vào loại đơn được giao).</div>',
+        unsafe_allow_html=True,
     )
 
     df_m4_view = df_m4_scored[df_m4_scored["member_id"].isin(filtered_ids)].copy()
@@ -1842,26 +2001,26 @@ with tab_m4:
             ]
         ],
         column_config={
-            "member_id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "member_id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "member_name": st.column_config.TextColumn("Họ và tên", disabled=True, width="medium"),
-            "department": st.column_config.TextColumn("Khoa Lâm sàng", disabled=True, width="medium"),
-            "target_out_week": st.column_config.NumberColumn("Mục tiêu Ngoại/Tuần", min_value=0, max_value=3000),
-            "out_t2": st.column_config.NumberColumn("Ngoại T2", min_value=0, max_value=1000),
-            "out_t3": st.column_config.NumberColumn("Ngoại T3", min_value=0, max_value=1000),
-            "out_t4": st.column_config.NumberColumn("Ngoại T4", min_value=0, max_value=1000),
-            "out_t5": st.column_config.NumberColumn("Ngoại T5", min_value=0, max_value=1000),
-            "out_t6": st.column_config.NumberColumn("Ngoại T6", min_value=0, max_value=1000),
+            "department": st.column_config.TextColumn("Khoa phụ trách", disabled=True, width="medium"),
+            "target_out_week": st.column_config.NumberColumn("CT Ngoại", min_value=0, max_value=3000),
+            "out_t2": st.column_config.NumberColumn("Ng.T2", min_value=0, max_value=1000),
+            "out_t3": st.column_config.NumberColumn("Ng.T3", min_value=0, max_value=1000),
+            "out_t4": st.column_config.NumberColumn("Ng.T4", min_value=0, max_value=1000),
+            "out_t5": st.column_config.NumberColumn("Ng.T5", min_value=0, max_value=1000),
+            "out_t6": st.column_config.NumberColumn("Ng.T6", min_value=0, max_value=1000),
             "done_out_week": st.column_config.NumberColumn("Tổng Ngoại", disabled=True),
-            "target_in_week": st.column_config.NumberColumn("Mục tiêu Nội/Tuần", min_value=0, max_value=3000),
+            "target_in_week": st.column_config.NumberColumn("CT Nội", min_value=0, max_value=3000),
             "in_t2": st.column_config.NumberColumn("Nội T2", min_value=0, max_value=1000),
             "in_t3": st.column_config.NumberColumn("Nội T3", min_value=0, max_value=1000),
             "in_t4": st.column_config.NumberColumn("Nội T4", min_value=0, max_value=1000),
             "in_t5": st.column_config.NumberColumn("Nội T5", min_value=0, max_value=1000),
             "in_t6": st.column_config.NumberColumn("Nội T6", min_value=0, max_value=1000),
             "done_in_week": st.column_config.NumberColumn("Tổng Nội", disabled=True),
-            "done_total_rx": st.column_config.NumberColumn("Tổng Đơn Duyệt", disabled=True),
+            "done_total_rx": st.column_config.NumberColumn("Tổng Đơn", disabled=True),
             "score_m4": st.column_config.ProgressColumn(
-                "Điểm Module 4", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
+                "Điểm M4", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
             ),
         },
         use_container_width=True,
@@ -1871,13 +2030,16 @@ with tab_m4:
     )
 
     st.markdown(
-        f"**📊 Dòng Tổng cộng Excel (Module 4):** Tổng Đơn Ngoại trú: `{int(df_m4_view['done_out_week'].sum()):,}/{int(df_m4_view['target_out_week'].sum()):,}` | "
-        f"Tổng Đơn Nội trú: `{int(df_m4_view['done_in_week'].sum()):,}/{int(df_m4_view['target_in_week'].sum()):,}` | "
-        f"**Tổng Đơn Duyệt Tuần: `{int(df_m4_view['done_total_rx'].sum()):,}`** | "
-        f"**Điểm TB Module 4: `{df_m4_view['score_m4'].mean():.1f}`**"
+        f"""<div class="excel-summary-bar">
+        📊 <b>Tổng cộng M4:</b> Đơn Ngoại trú: <b>{int(df_m4_view['done_out_week'].sum()):,}/{int(df_m4_view['target_out_week'].sum()):,}</b> &nbsp;|&nbsp;
+        Đơn Nội trú: <b>{int(df_m4_view['done_in_week'].sum()):,}/{int(df_m4_view['target_in_week'].sum()):,}</b> &nbsp;|&nbsp;
+        Tổng Đơn Duyệt: <b>{int(df_m4_view['done_total_rx'].sum()):,}</b> &nbsp;|&nbsp;
+        Điểm TB M4: <b>{df_m4_view['score_m4'].mean():.1f} đ</b>
+        </div>""",
+        unsafe_allow_html=True,
     )
 
-    if st.button("🔗 Đồng bộ Tổng đơn duyệt (Ngoại + Nội) từng ngày sang Tổng đơn của Module 7"):
+    if st.button("🔗 Đồng bộ Tổng đơn duyệt (Ngoại + Nội) từng ngày sang Tổng đơn của M7"):
         rx_map = {item["member_id"]: item for item in st.session_state.m4_rx}
         for item7 in st.session_state.m7_counsel:
             mid = item7["member_id"]
@@ -1888,16 +2050,17 @@ with tab_m4:
                     item7[f"tot_t{d_num}"] = max(tot_day, int(item7[f"coun_t{d_num}"]))
         st.session_state.editor_ver += 1
         save_state_to_disk()
-        st.success("Đã đồng bộ Tổng đơn (Ngoại + Nội) từ Module 4 sang cột Tổng đơn từng ngày của Module 7!")
+        st.success("Đã đồng bộ Tổng đơn (Ngoại + Nội) từ M4 sang M7!")
         st.rerun()
 
 # ------------------------------------------------------------------------------
-# MODULE 5: TIÊU CHÍ 3 — HỘI CHẨN LÂM SÀNG HÀNG NGÀY
+# MODULE 5: HỘI CHẨN LÂM SÀNG
 # ------------------------------------------------------------------------------
 with tab_m5:
-    st.subheader("🩺 Module 5 (Tiêu chí 3): Hội chẩn Lâm sàng Hàng ngày (Thứ 2 – Thứ 6)")
-    st.caption(
-        "Công thức chuẩn Excel: **Điểm Module 5 = 65% × (% Hoàn thành số lượng hội chẩn) + 35% × (% Bác sĩ đồng thuận)**."
+    st.markdown('<div class="mod-title">🩺 M5: Hội chẩn Lâm sàng Hàng ngày (Thứ 2 – Thứ 6)</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Công thức: Điểm M5 = 65% × (% Đạt số lượng hội chẩn) + 35% × (% Bác sĩ đồng thuận).</div>',
+        unsafe_allow_html=True,
     )
 
     df_m5_view = df_m5_scored[df_m5_scored["member_id"].isin(filtered_ids)].copy()
@@ -1906,24 +2069,22 @@ with tab_m5:
     st.data_editor(
         df_m5_view,
         column_config={
-            "member_id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "member_id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "member_name": st.column_config.TextColumn("Họ và tên Dược sĩ", disabled=True, width="medium"),
-            "department": st.column_config.TextColumn("Khoa Lâm sàng", disabled=True, width="medium"),
-            "target_consult_week": st.column_config.NumberColumn(
-                "Mục tiêu Ca Hội chẩn/Tuần", min_value=0, max_value=500, step=1
-            ),
-            "Thứ 2": st.column_config.NumberColumn("HC Thứ 2", min_value=0, max_value=100),
-            "Thứ 3": st.column_config.NumberColumn("HC Thứ 3", min_value=0, max_value=100),
-            "Thứ 4": st.column_config.NumberColumn("HC Thứ 4", min_value=0, max_value=100),
-            "Thứ 5": st.column_config.NumberColumn("HC Thứ 5", min_value=0, max_value=100),
-            "Thứ 6": st.column_config.NumberColumn("HC Thứ 6", min_value=0, max_value=100),
-            "done_consult_week": st.column_config.NumberColumn("Tổng Ca Hội chẩn", disabled=True),
-            "consult_qty_pct": st.column_config.NumberColumn("Đạt Số lượng (%)", disabled=True, format="%.1f%%"),
+            "department": st.column_config.TextColumn("Khoa phụ trách", disabled=True, width="medium"),
+            "target_consult_week": st.column_config.NumberColumn("Mục tiêu", min_value=0, max_value=500, step=1),
+            "Thứ 2": st.column_config.NumberColumn("Thứ 2", min_value=0, max_value=100),
+            "Thứ 3": st.column_config.NumberColumn("Thứ 3", min_value=0, max_value=100),
+            "Thứ 4": st.column_config.NumberColumn("Thứ 4", min_value=0, max_value=100),
+            "Thứ 5": st.column_config.NumberColumn("Thứ 5", min_value=0, max_value=100),
+            "Thứ 6": st.column_config.NumberColumn("Thứ 6", min_value=0, max_value=100),
+            "done_consult_week": st.column_config.NumberColumn("Tổng Ca", disabled=True),
+            "consult_qty_pct": st.column_config.NumberColumn("Đạt SL (%)", disabled=True, format="%.1f%%"),
             "doctor_consensus_pct": st.column_config.NumberColumn(
-                "BS Đồng thuận Hội chẩn (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%"
+                "BS Đồng thuận (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%"
             ),
             "score_m5": st.column_config.ProgressColumn(
-                "Điểm Module 5", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
+                "Điểm M5", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
             ),
         },
         use_container_width=True,
@@ -1933,18 +2094,22 @@ with tab_m5:
     )
 
     st.markdown(
-        f"**📊 Dòng Tổng cộng Excel (Module 5):** Tổng ca Hội chẩn: `{int(df_m5_view['done_consult_week'].sum()):,}/{int(df_m5_view['target_consult_week'].sum()):,}` | "
-        f"Tỷ lệ BS đồng thuận TB: `{df_m5_view['doctor_consensus_pct'].mean():.1f}%` | "
-        f"**Điểm TB Module 5: `{df_m5_view['score_m5'].mean():.1f}`**"
+        f"""<div class="excel-summary-bar">
+        📊 <b>Tổng cộng M5:</b> Số ca Hội chẩn: <b>{int(df_m5_view['done_consult_week'].sum()):,}/{int(df_m5_view['target_consult_week'].sum()):,}</b> &nbsp;|&nbsp;
+        BS đồng thuận TB: <b>{df_m5_view['doctor_consensus_pct'].mean():.1f}%</b> &nbsp;|&nbsp;
+        Điểm TB M5: <b>{df_m5_view['score_m5'].mean():.1f} đ</b>
+        </div>""",
+        unsafe_allow_html=True,
     )
 
 # ------------------------------------------------------------------------------
-# MODULE 6: TIÊU CHÍ 4 — CAN THIỆP CHỈNH LIỀU TRÊN LÂM SÀNG HÀNG NGÀY
+# MODULE 6: CAN THIỆP CHỈNH LIỀU
 # ------------------------------------------------------------------------------
 with tab_m6:
-    st.subheader("⚖️ Module 6 (Tiêu chí 4): Can thiệp Chỉnh liều trên Lâm sàng Hàng ngày (Thứ 2 – Thứ 6)")
-    st.caption(
-        "Công thức chuẩn Excel: **Điểm Module 6 = 65% × (% Hoàn thành số ca chỉnh liều) + 35% × (% Can thiệp chỉnh liều thành công)**."
+    st.markdown('<div class="mod-title">⚖️ M6: Can thiệp Chỉnh liều Lâm sàng (Thứ 2 – Thứ 6)</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Công thức: Điểm M6 = 65% × (% Đạt số ca chỉnh liều) + 35% × (% Can thiệp thành công).</div>',
+        unsafe_allow_html=True,
     )
 
     df_m6_view = df_m6_scored[df_m6_scored["member_id"].isin(filtered_ids)].copy()
@@ -1953,24 +2118,22 @@ with tab_m6:
     st.data_editor(
         df_m6_view,
         column_config={
-            "member_id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "member_id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "member_name": st.column_config.TextColumn("Họ và tên Dược sĩ", disabled=True, width="medium"),
-            "department": st.column_config.TextColumn("Khoa Lâm sàng", disabled=True, width="medium"),
-            "target_dose_week": st.column_config.NumberColumn(
-                "Mục tiêu Ca Chỉnh liều/Tuần", min_value=0, max_value=500, step=1
-            ),
-            "Thứ 2": st.column_config.NumberColumn("CL Thứ 2", min_value=0, max_value=100),
-            "Thứ 3": st.column_config.NumberColumn("CL Thứ 3", min_value=0, max_value=100),
-            "Thứ 4": st.column_config.NumberColumn("CL Thứ 4", min_value=0, max_value=100),
-            "Thứ 5": st.column_config.NumberColumn("CL Thứ 5", min_value=0, max_value=100),
-            "Thứ 6": st.column_config.NumberColumn("CL Thứ 6", min_value=0, max_value=100),
-            "done_dose_week": st.column_config.NumberColumn("Tổng Ca Chỉnh liều", disabled=True),
-            "dose_qty_pct": st.column_config.NumberColumn("Đạt Số lượng (%)", disabled=True, format="%.1f%%"),
+            "department": st.column_config.TextColumn("Khoa phụ trách", disabled=True, width="medium"),
+            "target_dose_week": st.column_config.NumberColumn("Mục tiêu", min_value=0, max_value=500, step=1),
+            "Thứ 2": st.column_config.NumberColumn("Thứ 2", min_value=0, max_value=100),
+            "Thứ 3": st.column_config.NumberColumn("Thứ 3", min_value=0, max_value=100),
+            "Thứ 4": st.column_config.NumberColumn("Thứ 4", min_value=0, max_value=100),
+            "Thứ 5": st.column_config.NumberColumn("Thứ 5", min_value=0, max_value=100),
+            "Thứ 6": st.column_config.NumberColumn("Thứ 6", min_value=0, max_value=100),
+            "done_dose_week": st.column_config.NumberColumn("Tổng Ca", disabled=True),
+            "dose_qty_pct": st.column_config.NumberColumn("Đạt SL (%)", disabled=True, format="%.1f%%"),
             "intervention_success_pct": st.column_config.NumberColumn(
-                "Tỷ lệ Chỉnh liều Thành công (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%"
+                "Thành công (%)", min_value=0.0, max_value=100.0, step=0.5, format="%.1f%%"
             ),
             "score_m6": st.column_config.ProgressColumn(
-                "Điểm Module 6", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
+                "Điểm M6", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
             ),
         },
         use_container_width=True,
@@ -1980,18 +2143,22 @@ with tab_m6:
     )
 
     st.markdown(
-        f"**📊 Dòng Tổng cộng Excel (Module 6):** Tổng ca Chỉnh liều: `{int(df_m6_view['done_dose_week'].sum()):,}/{int(df_m6_view['target_dose_week'].sum()):,}` | "
-        f"Tỷ lệ thành công TB: `{df_m6_view['intervention_success_pct'].mean():.1f}%` | "
-        f"**Điểm TB Module 6: `{df_m6_view['score_m6'].mean():.1f}`**"
+        f"""<div class="excel-summary-bar">
+        📊 <b>Tổng cộng M6:</b> Số ca Chỉnh liều: <b>{int(df_m6_view['done_dose_week'].sum()):,}/{int(df_m6_view['target_dose_week'].sum()):,}</b> &nbsp;|&nbsp;
+        Tỷ lệ thành công TB: <b>{df_m6_view['intervention_success_pct'].mean():.1f}%</b> &nbsp;|&nbsp;
+        Điểm TB M6: <b>{df_m6_view['score_m6'].mean():.1f} đ</b>
+        </div>""",
+        unsafe_allow_html=True,
     )
 
 # ------------------------------------------------------------------------------
-# MODULE 7: TIÊU CHÍ 5 — TƯ VẤN ĐƠN THUỐC TRÊN TỔNG SỐ ĐƠN TRONG NGÀY
+# MODULE 7: TƯ VẤN ĐƠN THUỐC / TỔNG ĐƠN
 # ------------------------------------------------------------------------------
 with tab_m7:
-    st.subheader("🗣️ Module 7 (Tiêu chí 5): Tư vấn Đơn thuốc trên Tổng số Đơn thuốc trong Ngày (Thứ 2 – Thứ 6)")
-    st.caption(
-        "Công thức chuẩn Excel: **Tỷ lệ Tư vấn Thực tế (%) = (Tổng đơn tư vấn tuần / Tổng đơn tuần) × 100%**, đối chiếu với **Mục tiêu Tỷ lệ Tư vấn (%)**."
+    st.markdown('<div class="mod-title">🗣️ M7: Tư vấn Đơn thuốc / Tổng số Đơn (Thứ 2 – Thứ 6)</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="mod-desc">Công thức: Tỷ lệ thực tế (%) = (Tổng đơn tư vấn / Tổng đơn tuần) × 100%, so sánh với Mục tiêu (%).</div>',
+        unsafe_allow_html=True,
     )
 
     df_m7_view = df_m7_scored[df_m7_scored["member_id"].isin(filtered_ids)].copy()
@@ -2021,27 +2188,27 @@ with tab_m7:
             ]
         ],
         column_config={
-            "member_id": st.column_config.TextColumn("Mã TV", disabled=True, width="small"),
+            "member_id": st.column_config.TextColumn("Mã", disabled=True, width="small"),
             "member_name": st.column_config.TextColumn("Họ và tên", disabled=True, width="medium"),
-            "department": st.column_config.TextColumn("Khoa Lâm sàng", disabled=True, width="medium"),
+            "department": st.column_config.TextColumn("Khoa phụ trách", disabled=True, width="medium"),
             "target_counsel_pct": st.column_config.NumberColumn(
-                "Mục tiêu Tỷ lệ Tư vấn (%)", min_value=0.0, max_value=100.0, step=1.0, format="%.1f%%"
+                "Mục tiêu (%)", min_value=0.0, max_value=100.0, step=1.0, format="%.1f%%"
             ),
-            "coun_t2": st.column_config.NumberColumn("Tư vấn T2", min_value=0, max_value=2000),
-            "tot_t2": st.column_config.NumberColumn("Tổng đơn T2", min_value=0, max_value=2000),
-            "coun_t3": st.column_config.NumberColumn("Tư vấn T3", min_value=0, max_value=2000),
-            "tot_t3": st.column_config.NumberColumn("Tổng đơn T3", min_value=0, max_value=2000),
-            "coun_t4": st.column_config.NumberColumn("Tư vấn T4", min_value=0, max_value=2000),
-            "tot_t4": st.column_config.NumberColumn("Tổng đơn T4", min_value=0, max_value=2000),
-            "coun_t5": st.column_config.NumberColumn("Tư vấn T5", min_value=0, max_value=2000),
-            "tot_t5": st.column_config.NumberColumn("Tổng đơn T5", min_value=0, max_value=2000),
-            "coun_t6": st.column_config.NumberColumn("Tư vấn T6", min_value=0, max_value=2000),
-            "tot_t6": st.column_config.NumberColumn("Tổng đơn T6", min_value=0, max_value=2000),
-            "counseled_week": st.column_config.NumberColumn("Tổng Đơn Tư vấn", disabled=True),
-            "total_rx_week": st.column_config.NumberColumn("Tổng Đơn Tuần", disabled=True),
-            "actual_counsel_pct": st.column_config.NumberColumn("Tỷ lệ Thực tế (%)", disabled=True, format="%.1f%%"),
+            "coun_t2": st.column_config.NumberColumn("TV T2", min_value=0, max_value=2000),
+            "tot_t2": st.column_config.NumberColumn("Đơn T2", min_value=0, max_value=2000),
+            "coun_t3": st.column_config.NumberColumn("TV T3", min_value=0, max_value=2000),
+            "tot_t3": st.column_config.NumberColumn("Đơn T3", min_value=0, max_value=2000),
+            "coun_t4": st.column_config.NumberColumn("TV T4", min_value=0, max_value=2000),
+            "tot_t4": st.column_config.NumberColumn("Đơn T4", min_value=0, max_value=2000),
+            "coun_t5": st.column_config.NumberColumn("TV T5", min_value=0, max_value=2000),
+            "tot_t5": st.column_config.NumberColumn("Đơn T5", min_value=0, max_value=2000),
+            "coun_t6": st.column_config.NumberColumn("TV T6", min_value=0, max_value=2000),
+            "tot_t6": st.column_config.NumberColumn("Đơn T6", min_value=0, max_value=2000),
+            "counseled_week": st.column_config.NumberColumn("Tổng TV", disabled=True),
+            "total_rx_week": st.column_config.NumberColumn("Tổng Đơn", disabled=True),
+            "actual_counsel_pct": st.column_config.NumberColumn("Thực tế (%)", disabled=True, format="%.1f%%"),
             "score_m7": st.column_config.ProgressColumn(
-                "Điểm Module 7", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
+                "Điểm M7", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
             ),
         },
         use_container_width=True,
@@ -2051,20 +2218,24 @@ with tab_m7:
     )
 
     st.markdown(
-        f"**📊 Dòng Tổng cộng Excel (Module 7):** Tổng đơn được tư vấn: `{int(df_m7_view['counseled_week'].sum()):,}/{int(df_m7_view['total_rx_week'].sum()):,}` | "
-        f"**Điểm TB Module 7: `{df_m7_view['score_m7'].mean():.1f}`**"
+        f"""<div class="excel-summary-bar">
+        📊 <b>Tổng cộng M7:</b> Tổng đơn được tư vấn: <b>{int(df_m7_view['counseled_week'].sum()):,}/{int(df_m7_view['total_rx_week'].sum()):,}</b> &nbsp;|&nbsp;
+        Điểm TB M7: <b>{df_m7_view['score_m7'].mean():.1f} đ</b>
+        </div>""",
+        unsafe_allow_html=True,
     )
 
 # ------------------------------------------------------------------------------
-# MODULE 8: TỔNG HỢP & TÍNH KPI TOÀN DIỆN TỪ TẤT CẢ CÁC MODULE
+# MODULE 8: TỔNG HỢP KPI TOÀN DIỆN
 # ------------------------------------------------------------------------------
 with tab_m8:
-    st.subheader("🏆 Module 8: Bảng Tổng hợp Điểm Tất cả Tiêu chí & Đánh giá KPI Cuối tuần")
+    st.markdown('<div class="mod-title">🏆 M8: Bảng Tổng hợp Điểm Tất cả Tiêu chí & Xếp loại KPI</div>', unsafe_allow_html=True)
     w = st.session_state.weights
     st.markdown(
-        f"**Trọng số hiện hành:** M3 (HSBA): `{w['w_m3_hsba']}%` • M4 (Duyệt đơn): `{w['w_m4_rx']}%` • "
-        f"M5 (Hội chẩn): `{w['w_m5_consult']}%` • M6 (Chỉnh liều): `{w['w_m6_dose']}%` • "
-        f"M7 (Tư vấn): `{w['w_m7_counsel']}%` • M2 (Nhiệm vụ phân công): `{w['w_m2_task']}%`"
+        f'<div class="mod-desc">Trọng số hiện hành: M3 (Bệnh án): <b>{w["w_m3_hsba"]}%</b> • M4 (Duyệt đơn): <b>{w["w_m4_rx"]}%</b> • '
+        f'M5 (Hội chẩn): <b>{w["w_m5_consult"]}%</b> • M6 (Chỉnh liều): <b>{w["w_m6_dose"]}%</b> • '
+        f'M7 (Tư vấn): <b>{w["w_m7_counsel"]}%</b> • M2 (Nhiệm vụ): <b>{w["w_m2_task"]}%</b></div>',
+        unsafe_allow_html=True,
     )
 
     df_kpi_sorted = df_master_filtered.sort_values(by="kpi_total", ascending=False).copy()
@@ -2091,24 +2262,24 @@ with tab_m8:
             ]
         ],
         column_config={
-            "id": "Mã TV",
+            "id": "Mã",
             "name": "Họ và tên Dược sĩ",
-            "department": "Khoa Lâm sàng",
-            "done_week": st.column_config.NumberColumn("Số HSBA"),
+            "department": "Khoa phụ trách",
+            "done_week": st.column_config.NumberColumn("Số BA"),
             "score_m3": st.column_config.NumberColumn("Điểm M3", format="%.1f"),
-            "done_total_rx": st.column_config.NumberColumn("Số Đơn duyệt"),
+            "done_total_rx": st.column_config.NumberColumn("Số Đơn"),
             "score_m4": st.column_config.NumberColumn("Điểm M4", format="%.1f"),
-            "done_consult_week": st.column_config.NumberColumn("Ca Hội chẩn"),
+            "done_consult_week": st.column_config.NumberColumn("Ca HC"),
             "score_m5": st.column_config.NumberColumn("Điểm M5", format="%.1f"),
-            "done_dose_week": st.column_config.NumberColumn("Ca Chỉnh liều"),
+            "done_dose_week": st.column_config.NumberColumn("Ca CL"),
             "score_m6": st.column_config.NumberColumn("Điểm M6", format="%.1f"),
-            "actual_counsel_pct": st.column_config.NumberColumn("% Tư vấn", format="%.1f%%"),
+            "actual_counsel_pct": st.column_config.NumberColumn("% TV", format="%.1f%%"),
             "score_m7": st.column_config.NumberColumn("Điểm M7", format="%.1f"),
             "assignment_completion_pct": st.column_config.NumberColumn("Điểm M2", format="%.1f"),
             "kpi_total": st.column_config.ProgressColumn(
-                "TỔNG ĐIỂM KPI", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
+                "TỔNG KPI", min_value=0, max_value=float(st.session_state.max_score_cap), format="%.1f đ"
             ),
-            "kpi_rank": "Xếp loại KPI",
+            "kpi_rank": "Xếp loại",
         },
         use_container_width=True,
         hide_index=True,
@@ -2118,7 +2289,7 @@ with tab_m8:
     with col_dl_xlsx:
         if excel_bytes is not None:
             st.download_button(
-                label="📥 Xuất Toàn bộ 9 Sheet (15 Thành viên) ra File Excel (.xlsx)",
+                label="📥 Xuất Toàn bộ 9 Sheet ra File Excel (.xlsx)",
                 data=excel_bytes,
                 file_name="he_thong_kpi_to_dls_15_thanh_vien.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -2128,7 +2299,7 @@ with tab_m8:
     with col_dl_csv:
         csv_master = df_kpi_sorted.to_csv(index=False).encode("utf-8-sig")
         st.download_button(
-            label="📥 Xuất Bảng Tổng hợp KPI (Module 8) ra CSV",
+            label="📥 Xuất Bảng Tổng hợp M8 ra CSV",
             data=csv_master,
             file_name="bang_kpi_tong_hop_15_tv_dls.csv",
             mime="text/csv",
@@ -2137,29 +2308,29 @@ with tab_m8:
 
     ch1, ch2 = st.columns(2)
     with ch1:
-        st.markdown("##### 📈 Biểu đồ Tổng Điểm KPI & Điểm Thành phần (15 Thành viên)")
+        st.markdown('<div class="mod-title">📈 Biểu đồ Tổng Điểm KPI & Điểm Thành phần (M3 – M7)</div>', unsafe_allow_html=True)
         chart_scores = df_kpi_sorted.set_index("name")[
             ["kpi_total", "score_m3", "score_m4", "score_m5", "score_m6", "score_m7"]
         ]
         chart_scores.columns = [
             "Tổng KPI",
-            "M3: HSBA",
+            "M3: Bệnh án",
             "M4: Duyệt đơn",
             "M5: Hội chẩn",
             "M6: Chỉnh liều",
             "M7: Tư vấn",
         ]
-        st.bar_chart(chart_scores, height=460)
+        st.bar_chart(chart_scores, height=400)
 
     with ch2:
-        st.markdown("##### 📊 Điểm KPI Trung bình theo Khoa Lâm sàng Phụ trách")
+        st.markdown('<div class="mod-title">📊 Điểm KPI Trung bình theo Khoa Lâm sàng</div>', unsafe_allow_html=True)
         dept_kpi = (
             df_kpi_sorted.groupby("department", as_index=True)
             .agg(
                 Điểm_KPI_TB=("kpi_total", "mean"),
-                Điểm_HSBA_M3=("score_m3", "mean"),
-                Điểm_Chỉnh_Liều_M6=("score_m6", "mean"),
+                Điểm_M3_BA=("score_m3", "mean"),
+                Điểm_M6_CL=("score_m6", "mean"),
             )
             .round(1)
         )
-        st.bar_chart(dept_kpi, height=460)
+        st.bar_chart(dept_kpi, height=400)
