@@ -13,36 +13,45 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# GIAO DIỆN CSS CHUẨN FONT ARIAL, CÂN ĐỐI CỠ CHỮ & THIẾT KẾ HIỆN ĐẠI
+# GIAO DIỆN CSS ĐÃ FIX LỖI MẤT ĐẦU TRANG & LỖI ICON SIDEBAR
 # ==============================================================================
 st.markdown(
     """
     <style>
-    /* Áp dụng phông chữ Arial toàn hệ thống */
-    html, body, [class*="css"], .stApp, h1, h2, h3, h4, h5, h6,
-    p, span, div, label, button, input, textarea,
+    /* Áp dụng phông chữ Arial nhưng KHÔNG đè lên font Icon Material của Streamlit */
+    html, body, .stApp, h1, h2, h3, h4, h5, h6,
+    p, label, button, input, textarea,
     [data-testid="stSidebar"], [data-testid="stMetricValue"],
     [data-testid="stMetricLabel"], [data-testid="stMetricDelta"],
-    [data-baseweb="tab"] {
+    [data-baseweb="tab"], [data-testid="stMarkdownContainer"] {
         font-family: Arial, Helvetica, sans-serif !important;
     }
 
-    /* Nền trang dịu mắt & thu gọn khoảng trống thừa phía trên */
+    /* Giữ nguyên font biểu tượng cho nút đóng/mở Sidebar (tránh hiện chữ double_arrow_right) */
+    [data-testid="stIconMaterial"], .material-icons, span[translate="no"] {
+        font-family: "Material Symbols Rounded", "Material Icons" !important;
+    }
+
+    /* Nền trang dịu mắt & chừa đủ khoảng trống 3.5rem cho thanh Header của Streamlit Cloud */
     .stApp {
         background-color: #f8fafc;
     }
+    header[data-testid="stHeader"] {
+        background-color: transparent !important;
+    }
     .block-container {
-        padding-top: 1.2rem !important;
+        padding-top: 3.5rem !important;
         padding-bottom: 2rem !important;
         max-width: 98% !important;
     }
 
-    /* Banner tiêu đề chính gọn gàng, cân đối */
+    /* Banner tiêu đề chính gọn gàng, hiển thị trọn vẹn */
     .dls-header {
         background: linear-gradient(135deg, #0f4c81 0%, #0284c7 100%);
         color: #ffffff;
-        padding: 12px 20px;
+        padding: 14px 20px;
         border-radius: 10px;
+        margin-top: 4px;
         margin-bottom: 14px;
         box-shadow: 0 2px 8px rgba(15, 76, 129, 0.15);
         display: flex;
@@ -53,13 +62,14 @@ st.markdown(
         font-size: 19px !important;
         font-weight: 700 !important;
         margin: 0 !important;
+        line-height: 1.35 !important;
         letter-spacing: 0.2px;
         color: #ffffff !important;
     }
     .dls-header-sub {
         font-size: 12.5px !important;
         color: #e0f2fe !important;
-        margin-top: 3px !important;
+        margin-top: 4px !important;
     }
     .dls-badge {
         background: rgba(255, 255, 255, 0.18);
